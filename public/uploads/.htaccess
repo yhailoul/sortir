@@ -1,0 +1,12 @@
+# Désactive l'exécution de scripts dans ce dossier
+Options -ExecCGI
+
+# Supprime les handlers PHP/scripts pour éviter leur interprétation
+RemoveHandler .php .php3 .php5 .phtml .pl .py .asp .sh
+RemoveType .php .php3 .php5 .phtml
+
+# Bloque l'accès direct aux fichiers au format script
+<FilesMatch "\.(php|phtml|pl|py|asp|sh|cgi)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
