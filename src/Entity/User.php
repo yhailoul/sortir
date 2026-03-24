@@ -37,13 +37,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $firstname = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $lastname = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $phone = null;
 
     #[ORM\Column]
@@ -52,7 +52,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $photo = null;
 
-    #[ORM\Column(length: 180, unique: true)]
+    #[ORM\Column(length: 180, unique: true, nullable: true)]
     private ?string $username = null;
 
     /**
@@ -68,13 +68,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $eventInscription;
 
     #[ORM\ManyToOne(inversedBy: 'participant')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Campus $campus = null;
 
     public function __construct()
     {
         $this->organizerEvents = new ArrayCollection();
         $this->eventInscription = new ArrayCollection();
+        $this->active = true;
     }
 
 
@@ -200,7 +201,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->active;
     }
 
-    public function setActive(bool $active): static
+    public function
+    setActive(bool $active): static
     {
         $this->active = $active;
 
