@@ -23,6 +23,8 @@ final class UserController extends AbstractController
         return $this->render('user/index.html.twig', [
             'users' => $userRepository->findAll(),
         ]);
+
+
     }
 
     #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
