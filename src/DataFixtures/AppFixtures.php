@@ -9,35 +9,52 @@ use App\Entity\Event;
 use App\Entity\Status;
 use App\Entity\User;
 use App\Entity\Location;
+use App\Repository\CampusRepository;
+use App\Repository\CityRepository;
+use Faker\Factory;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Faker\Generator;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AppFixtures extends Fixture
 {
-    public function __construct(private UserPasswordHasherInterface $userPasswordHasher){}
+    private Generator $faker;
+    public function __construct(
+        private UserPasswordHasherInterface $userPasswordHasher,
+        private CampusRepository $campusRepository,
+        private CityRepository $cityRepository
+    ){
+        $this->faker = Factory::create('fr_FR');
 
-        public function load(ObjectManager $manager): void
+
+    }
+
+    public function load(ObjectManager $manager): void
     {
-        $faker = \Faker\Factory::create('fr_FR');
 
-        //Déclaration des variables nécessaires
-        $users = [];
-        $events=[];
+        $this->campus($manager);
+        $this->status($manager);
+        $this->category($manager);
+        $this->city($manager);
+        $this->location($manager);
+        // Récupérer les objets créés pour les réutiliser
+        $campusList = $manager->getRepository(Campus::class)->findAll();
+        $statusList = $manager->getRepository(Status::class)->findAll();
+        $categoryList = $manager->getRepository(Category::class)->findAll();
+        $cityList = $manager->getRepository(City::class)->findAll();
+        $locationList = $manager->getRepository(Location::class)->findAll();
+
+
+        // Passer ces listes aux méthodes qui en ont besoin
+        $this->user($manager, $campusList);
+        $users = $manager->getRepository(User::class)->findAll();
+        $this->event($manager, $users, $statusList, $locationList, $categoryList);
+
+    }
+    public function campus(ObjectManager $manager){
+        //$faker = Factory::create('fr_FR');
         $campusList =[];
-        $statusList =[];
-        $categories = [];
-        $cities =[];
-        $locations=[];
-        $organizersEvents=[];
-
-
-
-        /////////////Création des données qui sont référencées par les autres tables//////////////
-
-        //création de fixtures pour Campus
-
-
         $campusEni = [
             'Rennes',
             'Quimper',
@@ -52,11 +69,13 @@ class AppFixtures extends Fixture
             $manager->persist($campus);
             $campusList[] = $campus;
         }
+        $manager->flush();
+    }
 
-
-        //creation de fixtures pour Status
-
-
+    public function status(ObjectManager $manager)
+    {
+        //$faker = Factory::create('fr_FR');
+        $statusList =[];
         $statuses=[
             'En création',
             'Ouverte',
@@ -72,7 +91,11 @@ class AppFixtures extends Fixture
             $statusList[] = $status;
             $manager->persist($status);
         }
-        //creation de fixtures pour Category
+        $manager->flush();
+    }
+    public function category(ObjectManager $manager){
+        //$faker = Factory::create('fr_FR');
+        $categories = [];
         $categoryNames = [
             'Gastronomy',
             'Sport & Adventure ',
@@ -93,20 +116,21 @@ class AppFixtures extends Fixture
             $manager->persist($category);
             $categories[] = $category;
 
-            $manager->persist($category);
+            // $manager->persist($category);
         }
+        $manager->flush();
+    }
 
-
+    public function location(ObjectManager $manager){
         //fixtures pour Location
-
-        $randomCity=($faker->randomElement($cities));
-        $randomEvent=($faker->randomElement($events));
-
+        $faker = Factory::create('fr_FR');
+        $cities = $this->cityRepository->findAll();
+        $locations=[];
         for ($i = 0; $i < 50; $i++) {
             $location=new Location();
             $location
-                ->addEvent($randomEvent)
-                ->addCity($randomCity)
+                //->addEvent($randomEvent)
+                ->addCity($this->faker->randomElement($cities))
                 ->setName($faker->sentence())
                 ->setStreet($faker->streetAddress())
                 ->setLatitude($faker->latitude())
@@ -114,53 +138,53 @@ class AppFixtures extends Fixture
             $locations[]=$location;
             $manager->persist($location);
         }
+        $manager->flush();
+    }
 
+    public function city(ObjectManager $manager){
         //fixtures pour City
-        $randomLocation=($faker->randomElement($locations));
+
+        $cities =[];
+        $faker = Factory::create('fr_FR');
         for ($i = 0; $i < 50; $i++) {
             $city=new City();
             $city
-                ->setLocationsList($randomLocation)
                 ->setName($faker->city())
                 ->setZipCode($faker->postcode());
             $cities[]=$city;
 
             $manager->persist($city);
         }
+        $manager->flush();
+    }
 
+    public function user(ObjectManager $manager, array $campusList){
+        $faker = Factory::create('fr_FR');
 
-        /////////////////Création des données dépendantes des autres tables/////////////////
-
-
-        //fixtures pour User
-        $randomCampus = $faker->randomElement($campusList);
-        $randomEvent=($faker->randomElement($events));
-
-
-
+        $users = [];
         for ($i = 0; $i < 50; $i++) {
             $user=new User();
             $user
                 ->setEmail($faker->unique()->email())
-                ->addEventInscription($randomEvent)
-                ->addOrganizerEvent($randomEvent)
                 ->setPassword($this->userPasswordHasher->hashPassword($user, '123456'))
                 ->setRoles(['ROLE_USER'])
+                ->setUsername($faker->userName())
                 ->setFirstname($faker->firstName())
                 ->setLastname($faker->lastName())
                 ->setPhone($faker->phoneNumber())
                 ->setActive(true)
-                ->setCampus($randomCampus);
+                ->setCampus($faker->randomElement($campusList));
 
             $users[] = $user;
 
             $manager->persist($user);
-
-
         }
+        $manager->flush();
+    }
 
-        //fixtures pour Event
-
+    public function event(ObjectManager $manager, array $users, array $statusList, array $locationList, array $categoryList){
+        $faker = Factory::create('fr_FR');
+        $events=[];
         $durations=[
             new \DateInterval('PT30M'),
             new \DateInterval('PT1H'),
@@ -175,65 +199,37 @@ class AppFixtures extends Fixture
             new \DateInterval('P3D'),
         ];
 
-
-
-        //éléments représentant les relation entre tables Event et : User, Status, Category, Location
-        $randomOrganizer=($faker->randomElement($users));
-        $randomStatus=($faker->randomElement($statuses));
-        $randomLocation=($faker->randomElement($locations));
-        $randomCategory=($faker->randomElement($categories));
-
-
-
-
-
-        //éléments permettant de représenter la relation ManyToMany Event - User
         for ($i = 0; $i < 50; $i++) {
+
             $event=new Event();
-
-            //ajout de participants aléatoires à l'événement
-
-            //séléction d'un nombre random de participants à l'événement
-            $maxParticipants = min($event->getNbInscriptionMax(), count($users));
-            $nbParticipants = $faker->numberBetween(0,$maxParticipants);
-
-            //mélange des utilisateurs et prendre les premiers participants numéro défini dans la variable $participants
-            //je récupère tous les utilisateurs
-            $shuffledParticipants = $users;
-            //random mix des utilisateurs pour ne pas prendre forcément les premiers de la liste
-            shuffle($shuffledParticipants);
-            //séléction des participants à l'événement (à l'éxception de l'organisateur
-            $selectedParticipants = array_slice($shuffledParticipants, 0, $nbParticipants);
-            foreach ($selectedParticipants as $participant) {
-                if($participant !== $randomOrganizer){
-                    $event->addParticipantList($participant);
-                }else{
-                    $organizersEvents[]=$event;
-                }
-            }
+            $organizer = $faker->randomElement($users);
+            $randomLocation = $faker->randomElement($locationList);
             $event
-
-                ->setOrganizer($randomOrganizer)
-                ->setEventStatus($randomStatus)
-                ->setEventLocation($randomLocation)
-                ->setEventCategory($randomCategory)
                 ->setName($faker->sentence())
                 ->setinfosEvent($faker->paragraph())
                 ->setnbInscriptionMax($faker->numberBetween(2,15))
                 ->setDuration($faker->randomElement($durations))
                 ->setDateStartHour($faker->dateTimeBetween('now', '+30 day'))
                 ->setDateEndHour($faker->dateTimeBetween('now', '+30 day'))
-                ->setDateLimiteInscription($faker->dateTimeBetween('now',$event->getDateStartHour()));
+                ->setDateLimiteInscription($faker->dateTimeBetween('now',$event->getDateStartHour()))
+                ->setOrganizer($organizer)
+                ->setEventStatus($faker->randomElement($statusList))
+                ->setEventLocation($randomLocation)
+                ->setEventCategory($faker->randomElement($categoryList));
+            $maxParticipants = min($event->getNbInscriptionMax(), count($users) - 1);
+            $nbParticipants = $faker->numberBetween(0, $maxParticipants);
+            $shuffledUsers = $users;
+            shuffle($shuffledUsers);
 
-
+            for ($j = 0; $j < $nbParticipants; $j++) {
+                if ($shuffledUsers[$j] !== $organizer) {
+                    $event->addParticipantList($shuffledUsers[$j]);
+                }
+            }
             $manager->persist($event);
         }
-
-
-
-
-
-
-        //$manager->flush();
+        $manager->flush();
     }
+
+
 }

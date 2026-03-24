@@ -22,11 +22,11 @@ class Campus
      * @var Collection<int, User>
      */
     #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'campus')]
-    private Collection $participant;
+    private Collection $participants;
 
     public function __construct()
     {
-        $this->participant = new ArrayCollection();
+        $this->participants = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -49,27 +49,27 @@ class Campus
     /**
      * @return Collection<int, User>
      */
-    public function getParticipant(): Collection
+    public function getparticipants(): Collection
     {
-        return $this->participant;
+        return $this->participants;
     }
 
-    public function addParticipant(User $participant): static
+    public function addparticipants(User $participants): static
     {
-        if (!$this->participant->contains($participant)) {
-            $this->participant->add($participant);
-            $participant->setCampus($this);
+        if (!$this->participants->contains($participants)) {
+            $this->participants->add($participants);
+            $participants->setCampus($this);
         }
 
         return $this;
     }
 
-    public function removeParticipant(User $participant): static
+    public function removeparticipants(User $participants): static
     {
-        if ($this->participant->removeElement($participant)) {
+        if ($this->participants->removeElement($participants)) {
             // set the owning side to null (unless already changed)
-            if ($participant->getCampus() === $this) {
-                $participant->setCampus(null);
+            if ($participants->getCampus() === $this) {
+                $participants->setCampus(null);
             }
         }
 

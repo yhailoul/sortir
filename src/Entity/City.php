@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\CityRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CityRepository::class)]
@@ -19,9 +21,14 @@ class City
     #[ORM\Column(length: 255)]
     private ?string $zipCode = null;
 
-    #[ORM\ManyToOne(inversedBy: 'city')]
+    #[ORM\OneToMany(targetEntity: Location::class, mappedBy: 'city')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Location $locationsList = null;
+    private Collection $locationsList;
+
+    public function __construct()
+    {
+        $this->locationsList = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -52,15 +59,15 @@ class City
         return $this;
     }
 
-    public function getLocationsList(): ?Location
+    public function getLocationsList(): Collection
     {
         return $this->locationsList;
     }
 
-    public function setLocationsList(?Location $locationsList): static
+    public function setLocationsList(Collection $locationsList): void
     {
         $this->locationsList = $locationsList;
-
-        return $this;
     }
+
+
 }
