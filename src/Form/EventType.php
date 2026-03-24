@@ -17,23 +17,34 @@ class EventType extends AbstractType
     {
         $builder
             ->add('name', TextType::class, [
-                'placeholder' => 'Nom :'
+                'attr' => [
+                    'placeholder' => 'Nom :'
+                ]
             ])
             ->add('dateStartHour', DateTimeType::class, [
-                'label' => "Date de début de l'évennement :",
+                'label' => "Date et heure de DEBUT de l'évènement :",
                 'widget' => 'single_text'
             ])
-            ->add('dateLimitInscription', DateTimeType::class, [
-                'label' => 'Date limite inscription :'
+
+            ->add('dateEndHour', DateTimeType::class, [
+                'label' => "Date et heure de FIN de l'évènement :",
+                'widget' => 'single_text'
             ])
 
-            ->add('nbInscriptionMax', IntegerType::class, [
-                'placeholder' => 'Taille limite de participant :'
+            ->add('registrationDeadline', DateTimeType::class, [
+                'label' => "Date limite d'inscription :",
+                'widget' => 'single_text'
+            ])
+            ->add('nbMaxRegistrations', IntegerType::class, [
+                'attr' => [
+                    'placeholder' => 'Taille limite de participant :'
+                ]
             ])
             ->add('infosEvent', TextareaType::class, [
-                'placeholder' => 'Description :'
-            ])
-        ;
+                'attr' => [
+                    'placeholder' => "Description de l'activité :"
+                ]
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Event;
+use App\Form\EventType;
 use App\Repository\EventRepository;
 use App\Utils\FileUploader;
 use Doctrine\ORM\EntityManagerInterface;
@@ -36,20 +37,24 @@ class EventController extends AbstractController
     ): Response
     {
         $event = new Event();
-        $eventForm = $this->createForm(Event::class, $event);
+        $eventForm = $this->createForm(EventType::class, $event);
 
         $eventForm->handleRequest($request);
 
         if ($eventForm->isSubmitted() && $eventForm->isValid()){
-            /**
-             * @var UploadedFile $file
-             */
-            $file =$eventForm->get('backdrop')->getData();
-            if($file){
-                $event->setBackdrop(
-                    $fileUploader->upload($file, 'assets/images/backdrops', $event->getName())
-                );
-            }
+//            /**
+//             * @var UploadedFile $file
+//             */
+//            $file =$eventForm->get('backdrop')->getData();
+//            if($file){
+//                $event->setBackdrop(
+//                    $fileUploader->upload($file, 'assets/images/backdrops', $event->getName())
+//                );
+//            }
+
+////            $duration = $event->($dateEndHour-$dateStartHour);
+//
+//            $duration->setDuration();
 
             $entityManager->persist($event);
             $entityManager->flush();
