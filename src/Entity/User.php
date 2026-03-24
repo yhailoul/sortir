@@ -46,10 +46,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?bool $active = null;
 
-    #[ORM\Column]
-    private ?bool $admin = null;
-
-
 
     public function getId(): ?int
     {
@@ -180,15 +176,4 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function isAdmin(): ?bool
-    {
-        return $this->admin;
-    }
-
-    public function setAdmin(bool $admin): static
-    {
-        $this->admin = $admin;
-
-        return $this;
-    }
 }
