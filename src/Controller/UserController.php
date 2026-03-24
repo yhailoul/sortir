@@ -32,6 +32,7 @@ final class UserController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->handleFileUploads($user, $form, $fileUploader);
+            $user->setActive(true);
             $entityManager->persist($user);
             $entityManager->flush();
 
@@ -84,7 +85,7 @@ final class UserController extends AbstractController
 
     private function handleFileUploads(User $user, $form, FileUploader $fileUploader): void
     {
-        $imageFile = $form->get('backgroundImage')->getData();
+        $imageFile = $form->get('photo')->getData();
         if ($imageFile) {
             $user->setPhoto($fileUploader->upload($imageFile));
         }

@@ -24,8 +24,8 @@ class AppFixtures extends Fixture
                 ->setFirstname($faker->firstName())
                 ->setLastname($faker->lastName())
                 ->setPhone($faker->phoneNumber())
-                ->setActive($faker->boolean())
-                ->setAdmin(false);
+                ->setActive($faker->boolean());
+//                ->setAdmin(false);
 
         }
         $manager->flush();
