@@ -177,6 +177,8 @@ class AppFixtures extends Fixture
 
             $users[] = $user;
 
+//
+
             $manager->persist($user);
         }
         $manager->flush();
