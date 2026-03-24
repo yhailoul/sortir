@@ -4,18 +4,37 @@ namespace App\Form;
 
 use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Image;
 
 class UserType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
+            ->add('pseudo')
+            ->add('firstName')
+            ->add('lastName')
+            ->add('phone')
             ->add('email')
-            ->add('roles')
             ->add('password')
-        ;
+            ->add('confirmPassword')
+            ->add('campus')
+            ->add('photo', FileType::class, [
+                'label' => 'Profile Picture',
+                'mapped' => false,
+                'required' => false,
+                'constraints' => [
+                    new Image(maxSize: 100, mimeTypes: [
+                        'image/jpeg',
+                        'image/png',
+                        'image/webp'
+                    ], maxSizeMessage: 'Maximum file size allowed is 1MB', mimeTypesMessage: 'Only JPG, PNG, webp files are allowed')
+                ]
+
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
