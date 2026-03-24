@@ -8,6 +8,7 @@ use App\Repository\UserRepository;
 use App\Service\FileUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -25,22 +26,14 @@ final class UserController extends AbstractController
     }
 
     #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, FileUploader $fileUploader, UserPasswordHasherInterface $passwordHasher): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, FileUploader $fileUploader): Response
     {
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $checkPassword = $form->get('password')->getData();
-
-            if(!empty($checkPassword)){
-                $hashedPassword = $passwordHasher->hashPassword($user, $checkPassword);
-                $user->setPassword($hashedPassword);
-
-            }
             $this->handleFileUploads($user, $form, $fileUploader);
-            $user->setActive(true);
             $entityManager->persist($user);
             $entityManager->flush();
 
@@ -62,12 +55,21 @@ final class UserController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_user_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, User $user, EntityManagerInterface $entityManager, FileUploader $fileUploader): Response
+    public function edit(Request $request, User $user, EntityManagerInterface $entityManager, FileUploader $fileUploader, UserPasswordHasherInterface $passwordHasher, Security $security): Response
     {
         $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $checkPassword = $form->get('password')->getData();
+
+            if (!empty($checkPassword)) {
+                $security->login($user);
+                $hashedPassword = $passwordHasher->hashPassword($user, $checkPassword);
+                $user->setPassword($hashedPassword);
+
+            }
+
             $this->handleFileUploads($user, $form, $fileUploader);
             $entityManager->flush();
 
