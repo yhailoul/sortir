@@ -22,9 +22,10 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('events', name: 'events_')]
 class EventController extends AbstractController
 {
-    #[Route('/list', name: 'list', methods: ['GET','POST'])]
+    #[Route('/list', name: 'list', methods: ['GET', 'POST'])]
     public function list(Request $request, EventRepository $eventRepository, Security $security): Response
-    {   $events=[];
+    {
+        $events = [];
         $eventList = $eventRepository->findAll();
         $user = $security->getUser();
         if (!$user instanceof User) {
@@ -34,9 +35,9 @@ class EventController extends AbstractController
         $filterForm = $this->createForm(FilterSearchType::class, $eventSearch);
         $filterForm->handleRequest($request);
 
-         if ($filterForm->isSubmitted()) {
+        if ($filterForm->isSubmitted()) {
 
-           $events = $eventRepository->filterBySelection($user, $eventSearch);
+            $events = $eventRepository->filterBySelection($user, $eventSearch);
             //dd($events);
         }
         return $this->render('event/list.html.twig', [
@@ -49,23 +50,24 @@ class EventController extends AbstractController
     }
 
     #[Route('/detail/{id}', name: 'detail', requirements: ['id' => '\d+'])]
-    public function detail(int $id, EventRepository $eventRepository): Response{
+    public function detail(int $id, EventRepository $eventRepository): Response
+    {
         $event = $eventRepository->find($id);
-         if (!$event) {
-             throw $this->createNotFoundException('Pas de event avec ce id '.$id);
-         }
+        if (!$event) {
+            throw $this->createNotFoundException('Pas de event avec ce id ' . $id);
+        }
 
 
         return $this->render('event/detail.html.twig', [
             'event' => $event
         ]);
-}
+    }
 
     #[Route('/create', name: 'create', methods: ['POST', 'GET'])]
     public function createEvent(
         EntityManagerInterface $entityManager,
-        Request $request,
-        FileUploader $fileUploader
+        Request                $request,
+        FileUploader           $fileUploader
     ): Response
     {
         $event = new Event();
@@ -73,12 +75,12 @@ class EventController extends AbstractController
 
         $eventForm->handleRequest($request);
 
-        if ($eventForm->isSubmitted() && $eventForm->isValid()){
+        if ($eventForm->isSubmitted() && $eventForm->isValid()) {
             /**
              * @var UploadedFile $file
              */
-            $file =$eventForm->get('backdrop')->getData();
-            if($file){
+            $file = $eventForm->get('backdrop')->getData();
+            if ($file) {
                 $event->setBackdrop(
                     $fileUploader->upload($file, 'assets/images/backdrops', $event->getName())
                 );
@@ -104,18 +106,18 @@ class EventController extends AbstractController
 
     #[ROUTE('/edit/{id}', name: 'edit', requirements: ['id' => '\d+'])]
     public function editEvent(
-        int $id,
-        EventRepository $eventRepository,
+        int                    $id,
+        EventRepository        $eventRepository,
         EntityManagerInterface $entityManager,
-        Request $request,
-        FileUploader $fileUploader
+        Request                $request,
+        FileUploader           $fileUploader
     ): Response
     {
         $event = $eventRepository->find($id);
 
         $eventForm = $this->createForm(EventType::class, $event);
         $eventForm->handleRequest($request);
-        if ($eventForm->isSubmitted() && $eventForm->isValid()){
+        if ($eventForm->isSubmitted() && $eventForm->isValid()) {
             $duration = $event->getDateStartHour()->diff($event->getDateEndHour());
             $event->setDuration($duration);
             $entityManager->persist($event);
@@ -131,15 +133,15 @@ class EventController extends AbstractController
 
     #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '\d+'])]
     public function deleteEvent(
-        int $id,
-        EventRepository $eventRepository,
+        int                    $id,
+        EventRepository        $eventRepository,
         EntityManagerInterface $entityManager
     ): Response
     {
         $event = $eventRepository->find($id);
 
         if (!$event) {
-            throw $this->createNotFoundException('There is not event with the id '.$id);
+            throw $this->createNotFoundException('There is not event with the id ' . $id);
         }
 
         $entityManager->remove($event);
@@ -147,5 +149,37 @@ class EventController extends AbstractController
 
         $this->addFlash('success', 'Event deleted!');
         return $this->redirectToRoute('events_list', ['page' => 1]);
+    }
+
+    #[Route('/{id}/register', name: 'register', requirements: ['id' => '\d+'])]
+    public function registerEvent(Event $event, EntityManagerInterface $entityManager): Response {
+        $user = $this->getUser();
+
+        // Vérifie si le user est déjà inscrit
+        if($event->getParticipantList()->contains($user)){
+            $this->addFlash('warning', 'Event already registered!');
+            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+        }
+
+        // Vérifie la date limite d'inscription
+        if($event->getRegistrationDeadline() < new \DateTime()){
+            $this->addFlash('danger', 'The registration deadline has passed!');
+            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+        }
+
+
+        // Vérifie le nombre de places
+        if($event->getParticipantList()->count() >= $event->getNbMaxRegistrations()) {
+            $this->addFlash('danger', 'There are maximum number of participants!');
+            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+        }
+
+        $event->addParticipantList($user);
+        $entityManager->persist($event);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Event registered!');
+        return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+
     }
 }

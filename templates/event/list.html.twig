@@ -9,7 +9,7 @@
         <h2>event List</h2>
         <div class="searchBar">
             {{form_start(filterForm) }}
-            {{ form_widget(filterForm) }}
+            {{ form_rest(filterForm) }}
             <button>Search</button>
             {{ form_end(filterForm) }}
         </div>
@@ -19,6 +19,7 @@
                 {% for ev in events %}
                     <article>
                         <p>{{ loop.index }} : {{ ev.name }}</p>
+                        <a href="{{ path('events_register', {'id': ev.id}) }}">Register</a>
                     </article>
                 {% endfor %}
             <br>
@@ -26,6 +27,7 @@
                     {% for event in eventList %}
                     <article>
                         <p>{{ loop.index }} : {{ event.name }}</p>
+                        <a href="{{ path('events_register', {'id': event.id}) }}">Register</a>
                    </article>
                     {% endfor %}
 
