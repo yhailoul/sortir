@@ -44,4 +44,9 @@ class EventRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function findByNotSignedUp(User $user) {
+
+
+    }
+
 }
