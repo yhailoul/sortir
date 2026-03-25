@@ -2,12 +2,12 @@
 
 namespace App\Utils;
 
-use App\Repository\SerieRepository;
+use App\Repository\EventRepository;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class FileUploader
 {
-    public function __construct(private SerieRepository $serieRepository)
+    public function __construct(private EventRepository $eventRepository)
     {
     }
 
