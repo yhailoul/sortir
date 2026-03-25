@@ -16,6 +16,31 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('events', name: 'events_')]
 class EventController extends AbstractController
 {
+    #[Route('/{page}', name: 'list', requirements: ['page' => '\d+'])]
+    public function list(
+        EventRepository $eventRepository,
+        int $page = 1): Response
+    {
+        $nbEvents = $eventRepository->count();
+        $maxPages = max(1, ceil($nbEvents / 20));
+
+        if ($page > $maxPages) {
+            throw $this->createNotFoundException("The page $page does not exist.");
+        }
+
+        if ($page < 1) {
+            return $this->redirectToRoute('events_list', ['page' => 1]);
+        }
+
+        $events = $eventRepository->findBy([], [], 20, ($page - 1) * 20);
+
+        return $this->render('event/list.html.twig', [
+            'events' => $events,
+            'currentPage' => $page,
+            'maxPages' => $maxPages,
+        ]);
+    }
+
     #[Route('/detail/{id}', name: 'detail', requirements: ['id' => '\d+'])]
     public function detail(int $id, EventRepository $eventRepository): Response{
         $event = $eventRepository->find($id);
@@ -29,7 +54,7 @@ class EventController extends AbstractController
         ]);
 }
 
-    #[Route('/create', name: 'event_create', methods: ['POST', 'GET'])]
+    #[Route('/create', name: 'create', methods: ['POST', 'GET'])]
     public function createEvent(
         EntityManagerInterface $entityManager,
         Request $request,
@@ -52,9 +77,9 @@ class EventController extends AbstractController
 //                );
 //            }
 
-////            $duration = $event->($dateEndHour-$dateStartHour);
-//
-//            $duration->setDuration();
+
+            $duration = $event->getDateStartHour()->diff($event->getDateEndHour());
+            $event->setDuration($duration);
 
             $entityManager->persist($event);
             $entityManager->flush();
@@ -69,4 +94,53 @@ class EventController extends AbstractController
             'eventForm' => $eventForm->createView(),
         ]);
     }
+
+    #[ROUTE('/edit/{id}', name: 'edit', requirements: ['id' => '\d+'])]
+    public function editEvent(
+        int $id,
+        EventRepository $eventRepository,
+        EntityManagerInterface $entityManager,
+        Request $request,
+        FileUploader $fileUploader
+    ): Response
+    {
+        $event = $eventRepository->find($id);
+
+        $eventForm = $this->createForm(EventType::class, $event);
+        $eventForm->handleRequest($request);
+        if ($eventForm->isSubmitted() && $eventForm->isValid()){
+            $duration = $event->getDateStartHour()->diff($event->getDateEndHour());
+            $event->setDuration($duration);
+            $entityManager->persist($event);
+            $entityManager->flush();
+            $this->addFlash('success', 'Event edited!');
+
+            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+        }
+        return $this->render('event/edit.html.twig', [
+            'eventFormEdit' => $eventForm->createView()
+        ]);
+    }
+
+    #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '\d+'])]
+    public function deleteEvent(
+        int $id,
+        EventRepository $eventRepository,
+        EntityManagerInterface $entityManager
+    ): Response
+    {
+        $event = $eventRepository->find($id);
+
+        if (!$event) {
+            throw $this->createNotFoundException('There is not event with the id '.$id);
+        }
+
+        $entityManager->remove($event);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Event deleted!');
+        return $this->redirectToRoute('events_list', ['page' => 1]);
+    }
+
+
 }

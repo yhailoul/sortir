@@ -24,9 +24,16 @@ class Campus
     #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'campus')]
     private Collection $participants;
 
+    /**
+     * @var Collection<int, Event>
+     */
+    #[ORM\OneToMany(targetEntity: Event::class, mappedBy: 'campus')]
+    private Collection $events;
+
     public function __construct()
     {
         $this->participants = new ArrayCollection();
+        $this->events = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -70,6 +77,36 @@ class Campus
             // set the owning side to null (unless already changed)
             if ($participants->getCampus() === $this) {
                 $participants->setCampus(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Event>
+     */
+    public function getEvents(): Collection
+    {
+        return $this->events;
+    }
+
+    public function addEvent(Event $event): static
+    {
+        if (!$this->events->contains($event)) {
+            $this->events->add($event);
+            $event->setCampus($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvent(Event $event): static
+    {
+        if ($this->events->removeElement($event)) {
+            // set the owning side to null (unless already changed)
+            if ($event->getCampus() === $this) {
+                $event->setCampus(null);
             }
         }
 

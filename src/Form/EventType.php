@@ -3,6 +3,10 @@
 namespace App\Form;
 
 use App\Entity\Event;
+use App\Entity\Location;
+use App\Entity\Status;
+use Doctrine\ORM\Mapping\Entity;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
@@ -44,6 +48,16 @@ class EventType extends AbstractType
                 'attr' => [
                     'placeholder' => "Description de l'activité :"
                 ]
+            ])
+
+            ->add('eventLocation', EntityType::class, [
+            'class' => Location::class,
+                    'choice_label' => "name",
+            ])
+
+            ->add('eventStatus', EntityType::class, [
+            'class' => Status::class,
+                    'choice_label' => "label",
             ]);
     }
 

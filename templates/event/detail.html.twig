@@ -2,9 +2,29 @@
 
 {% block body %}
 
-{% endblock %}
+    <h2>Details of {{ event.name }}</h2>
 
-{% block title %}
+    <div>
+        <div>
+            <p>Name of the event : {{ event.name }}</p>
+            <p>Dates and hours of this one : {{ event.dateStartHour|date('d-w-Y H:i') }} to {{ event.dateEndHour|date('d-w-Y H:i')}}</p>
+            <p>Registration deadline  : {{ event.registrationDeadline|date('d-m-Y H:i') }}</p>
+            <p>Number of seats : {{ event.nbMaxRegistrations }}</p>
+            <p>Duration : {{ event.duration.format('%d days, %h hours, %m minutes')}}</p>
+            <p>Description : {{ event.infosEvent }}</p>
+            <p>Campus : {{ event.campus.name }}</p>
+            <p>Place : {{ event.eventLocation.name }}</p>
+            <p>Street : {{ event.eventLocation.street }}</p>
+            <p>Zipcode</p>
+            <p>Latitude : {{ event.eventLocation.latitude }}</p>
+            <p>Longitude : {{ event.eventLocation.longitude }}</p>
+
+        </div>
+        <div>
+            <a href="{{ path('events_edit', {'id': event.id}) }}">Update</a>
+            <a onclick="return confirm('Do you really want to delete {{ event.name }} ?')" href="{{ path('events_delete', {'id': event.id}) }}">Delete</a>
+        </div>
+    </div>
 
 {% endblock %}
 

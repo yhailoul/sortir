@@ -56,7 +56,9 @@ class Event
 
     #[ORM\ManyToOne(inversedBy: 'events')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Category $eventCategory = null;
+    private ?Campus $campus = null;
+
+
 
     public function __construct()
     {
@@ -215,14 +217,14 @@ class Event
         return $this;
     }
 
-    public function getEventCategory(): ?Category
+    public function getCampus(): ?Campus
     {
-        return $this->eventCategory;
+        return $this->campus;
     }
 
-    public function setEventCategory(?Category $eventCategory): static
+    public function setCampus(?Campus $campus): static
     {
-        $this->eventCategory = $eventCategory;
+        $this->campus = $campus;
 
         return $this;
     }
