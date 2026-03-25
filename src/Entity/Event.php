@@ -29,10 +29,10 @@ class Event
     private ?\DateTime $dateEndHour = null;
 
     #[ORM\Column]
-    private ?\DateTime $dateLimiteInscription = null;
+    private ?\DateTime $registrationDeadline = null;
 
     #[ORM\Column]
-    private ?int $nbInscriptionMax = null;
+    private ?int $nbMaxRegistrations = null;
 
     #[ORM\Column(type: Types::TEXT)]
     private ?string $infosEvent = null;
@@ -56,7 +56,9 @@ class Event
 
     #[ORM\ManyToOne(inversedBy: 'events')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Category $eventCategory = null;
+    private ?Campus $campus = null;
+
+
 
     public function __construct()
     {
@@ -116,26 +118,26 @@ class Event
         return $this;
     }
 
-    public function getDateLimiteInscription(): ?\DateTime
+    public function getRegistrationDeadline(): ?\DateTime
     {
-        return $this->dateLimiteInscription;
+        return $this->registrationDeadline;
     }
 
-    public function setDateLimiteInscription(\DateTime $dateLimiteInscription): static
+    public function setRegistrationDeadline(\DateTime $registrationDeadline): static
     {
-        $this->dateLimiteInscription = $dateLimiteInscription;
+        $this->registrationDeadline = $registrationDeadline;
 
         return $this;
     }
 
-    public function getNbInscriptionMax(): ?int
+    public function getNbMaxRegistrations(): ?int
     {
-        return $this->nbInscriptionMax;
+        return $this->nbMaxRegistrations;
     }
 
-    public function setNbInscriptionMax(int $nbInscriptionMax): static
+    public function setNbMaxRegistrations(int $nbMaxRegistrations): static
     {
-        $this->nbInscriptionMax = $nbInscriptionMax;
+        $this->nbMaxRegistrations = $nbMaxRegistrations;
 
         return $this;
     }
@@ -215,14 +217,14 @@ class Event
         return $this;
     }
 
-    public function getEventCategory(): ?Category
+    public function getCampus(): ?Campus
     {
-        return $this->eventCategory;
+        return $this->campus;
     }
 
-    public function setEventCategory(?Category $eventCategory): static
+    public function setCampus(?Campus $campus): static
     {
-        $this->eventCategory = $eventCategory;
+        $this->campus = $campus;
 
         return $this;
     }

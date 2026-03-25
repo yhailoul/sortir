@@ -1,0 +1,146 @@
+<?php
+
+namespace App\Controller;
+
+use App\Entity\Event;
+use App\Form\EventType;
+use App\Repository\EventRepository;
+use App\Utils\FileUploader;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+
+#[Route('events', name: 'events_')]
+class EventController extends AbstractController
+{
+    #[Route('/{page}', name: 'list', requirements: ['page' => '\d+'])]
+    public function list(
+        EventRepository $eventRepository,
+        int $page = 1): Response
+    {
+        $nbEvents = $eventRepository->count();
+        $maxPages = max(1, ceil($nbEvents / 20));
+
+        if ($page > $maxPages) {
+            throw $this->createNotFoundException("The page $page does not exist.");
+        }
+
+        if ($page < 1) {
+            return $this->redirectToRoute('events_list', ['page' => 1]);
+        }
+
+        $events = $eventRepository->findBy([], [], 20, ($page - 1) * 20);
+
+        return $this->render('event/list.html.twig', [
+            'events' => $events,
+            'currentPage' => $page,
+            'maxPages' => $maxPages,
+        ]);
+    }
+
+    #[Route('/detail/{id}', name: 'detail', requirements: ['id' => '\d+'])]
+    public function detail(int $id, EventRepository $eventRepository): Response{
+        $event = $eventRepository->find($id);
+         if (!$event) {
+             throw $this->createNotFoundException('Pas de event avec ce id '.$id);
+         }
+
+
+        return $this->render('event/detail.html.twig', [
+            'event' => $event
+        ]);
+}
+
+    #[Route('/create', name: 'create', methods: ['POST', 'GET'])]
+    public function createEvent(
+        EntityManagerInterface $entityManager,
+        Request $request,
+        FileUploader $fileUploader
+    ): Response
+    {
+        $event = new Event();
+        $eventForm = $this->createForm(EventType::class, $event);
+
+        $eventForm->handleRequest($request);
+
+        if ($eventForm->isSubmitted() && $eventForm->isValid()){
+//            /**
+//             * @var UploadedFile $file
+//             */
+//            $file =$eventForm->get('backdrop')->getData();
+//            if($file){
+//                $event->setBackdrop(
+//                    $fileUploader->upload($file, 'assets/images/backdrops', $event->getName())
+//                );
+//            }
+
+
+            $duration = $event->getDateStartHour()->diff($event->getDateEndHour());
+            $event->setDuration($duration);
+
+            $entityManager->persist($event);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Event created!');
+
+            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+
+        }
+
+        return $this->render('event/create.html.twig', [
+            'eventForm' => $eventForm->createView(),
+        ]);
+    }
+
+    #[ROUTE('/edit/{id}', name: 'edit', requirements: ['id' => '\d+'])]
+    public function editEvent(
+        int $id,
+        EventRepository $eventRepository,
+        EntityManagerInterface $entityManager,
+        Request $request,
+        FileUploader $fileUploader
+    ): Response
+    {
+        $event = $eventRepository->find($id);
+
+        $eventForm = $this->createForm(EventType::class, $event);
+        $eventForm->handleRequest($request);
+        if ($eventForm->isSubmitted() && $eventForm->isValid()){
+            $duration = $event->getDateStartHour()->diff($event->getDateEndHour());
+            $event->setDuration($duration);
+            $entityManager->persist($event);
+            $entityManager->flush();
+            $this->addFlash('success', 'Event edited!');
+
+            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+        }
+        return $this->render('event/edit.html.twig', [
+            'eventFormEdit' => $eventForm->createView()
+        ]);
+    }
+
+    #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '\d+'])]
+    public function deleteEvent(
+        int $id,
+        EventRepository $eventRepository,
+        EntityManagerInterface $entityManager
+    ): Response
+    {
+        $event = $eventRepository->find($id);
+
+        if (!$event) {
+            throw $this->createNotFoundException('There is not event with the id '.$id);
+        }
+
+        $entityManager->remove($event);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Event deleted!');
+        return $this->redirectToRoute('events_list', ['page' => 1]);
+    }
+
+
+}

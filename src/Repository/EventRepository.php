@@ -16,6 +16,19 @@ class EventRepository extends ServiceEntityRepository
         parent::__construct($registry, Event::class);
     }
 
+    public function findBestEvents(int $page =1)
+    {
+        $qb = $this->createQueryBuilder('e');
+        $qb->addOrderBy('e.popularity', 'DESC');
+        $qb->setFirstResult(($page-1) * $page);
+        $qb->setMaxResults($page);
+        $events = $qb->getQuery()->getResult();
+        return $events;
+    }
+
+
+
+
     //    /**
     //     * @return Event[] Returns an array of Event objects
     //     */
