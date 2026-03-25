@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+{% block title %}
+    event List
+{% endblock %}
+
+{% block body %}
+
+    <div class="content">
+        <h2>event List</h2>
+        <div class="searchBar">
+            {{form_start(filterForm) }}
+            {{ form_widget(filterForm) }}
+            <button>Search</button>
+            {{ form_end(filterForm) }}
+        </div>
+        <section>
+
+            <p>événements choisis</p>
+                {% for ev in events %}
+                    <article>
+                        <p>{{ loop.index }} : {{ ev.name }}</p>
+                    </article>
+                {% endfor %}
+            <br>
+               <p>tous les événements </p>
+                    {% for event in eventList %}
+                    <article>
+                        <p>{{ loop.index }} : {{ event.name }}</p>
+                   </article>
+                    {% endfor %}
+
+        </section>
+    </div>
+
+{% endblock %}
+
+
