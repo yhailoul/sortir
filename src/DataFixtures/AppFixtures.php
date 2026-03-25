@@ -3,7 +3,6 @@
 namespace App\DataFixtures;
 
 use App\Entity\Campus;
-use App\Entity\Category;
 use App\Entity\City;
 use App\Entity\Event;
 use App\Entity\Status;
@@ -20,11 +19,11 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 class AppFixtures extends Fixture
 {
     private Generator $faker;
+
     public function __construct(
         private UserPasswordHasherInterface $userPasswordHasher,
-        private CampusRepository $campusRepository,
-        private CityRepository $cityRepository
-    ){
+    )
+    {
         $this->faker = Factory::create('fr_FR');
 
 
@@ -32,29 +31,24 @@ class AppFixtures extends Fixture
 
     public function load(ObjectManager $manager): void
     {
+        // On récupère directement les objets créés par les méthodes et renvoyer en return au lieu de passer par le repo
+        $campusList = $this->campus($manager);
+        $statusList = $this->status($manager);
+        $cityList = $this->city($manager);
 
-        $this->campus($manager);
-        $this->status($manager);
-        $this->category($manager);
-        $this->city($manager);
-        $this->location($manager);
-        // Récupérer les objets créés pour les réutiliser
-        $campusList = $manager->getRepository(Campus::class)->findAll();
-        $statusList = $manager->getRepository(Status::class)->findAll();
-        $categoryList = $manager->getRepository(Category::class)->findAll();
-        $cityList = $manager->getRepository(City::class)->findAll();
-        $locationList = $manager->getRepository(Location::class)->findAll();
+        $locationList = $this->location($manager, $cityList);
 
+        $users = $this->user($manager, $campusList);
 
-        // Passer ces listes aux méthodes qui en ont besoin
-        $this->user($manager, $campusList);
-        $users = $manager->getRepository(User::class)->findAll();
-        $this->event($manager, $users, $statusList, $locationList, $categoryList);
+        $this->event($manager, $users, $statusList, $locationList);
 
+        $manager->flush();
     }
-    public function campus(ObjectManager $manager){
+
+    public function campus(ObjectManager $manager): array
+    {
         //$faker = Factory::create('fr_FR');
-        $campusList =[];
+        $campusList = [];
         $campusEni = [
             'Rennes',
             'Quimper',
@@ -69,14 +63,15 @@ class AppFixtures extends Fixture
             $manager->persist($campus);
             $campusList[] = $campus;
         }
-        $manager->flush();
+
+        return $campusList;
     }
 
-    public function status(ObjectManager $manager)
+    public function status(ObjectManager $manager): array
     {
         //$faker = Factory::create('fr_FR');
-        $statusList =[];
-        $statuses=[
+        $statusList = [];
+        $statuses = [
             'En création',
             'Ouverte',
             'Clôturée',
@@ -91,79 +86,57 @@ class AppFixtures extends Fixture
             $statusList[] = $status;
             $manager->persist($status);
         }
-        $manager->flush();
-    }
-    public function category(ObjectManager $manager){
-        //$faker = Factory::create('fr_FR');
-        $categories = [];
-        $categoryNames = [
-            'Gastronomy',
-            'Sport & Adventure ',
-            'Culture & Discoveries',
-            'Games & Entertainment',
-            'Gaming',
-            'Well-being & relaxation',
-            'Nature & Outdoors',
-            'Creativity et Workshops',
-            'Nightlife & Festivities',
-            'Unusual & Original'
-        ];
 
-
-        foreach ($categoryNames as $categoryName) {
-            $category = new Category();
-            $category->setLabel($categoryName);
-            $manager->persist($category);
-            $categories[] = $category;
-
-            // $manager->persist($category);
-        }
-        $manager->flush();
+        return $statusList;
     }
 
-    public function location(ObjectManager $manager){
+    public function location(ObjectManager $manager, array $cityList): array
+    {
         //fixtures pour Location
         $faker = Factory::create('fr_FR');
-        $cities = $this->cityRepository->findAll();
-        $locations=[];
+        $locations = [];
         for ($i = 0; $i < 50; $i++) {
-            $location=new Location();
+            $location = new Location();
             $location
                 //->addEvent($randomEvent)
-                ->addCity($this->faker->randomElement($cities))
+                ->setCity($this->faker->randomElement($cityList))
                 ->setName($faker->sentence())
                 ->setStreet($faker->streetAddress())
                 ->setLatitude($faker->latitude())
                 ->setLongitude($faker->longitude());
-            $locations[]=$location;
+            $locations[] = $location;
             $manager->persist($location);
         }
-        $manager->flush();
+
+        return $locations;
     }
 
-    public function city(ObjectManager $manager){
+    public function city(ObjectManager $manager): array
+    {
         //fixtures pour City
 
-        $cities =[];
+        $cities = [];
         $faker = Factory::create('fr_FR');
         for ($i = 0; $i < 50; $i++) {
-            $city=new City();
+            $city = new City();
             $city
                 ->setName($faker->city())
                 ->setZipCode($faker->postcode());
-            $cities[]=$city;
+            $cities[] = $city;
 
             $manager->persist($city);
         }
-        $manager->flush();
+
+        return $cities;
     }
 
-    public function user(ObjectManager $manager, array $campusList){
+    public function user(ObjectManager $manager, array $campusList): array
+    {
         $faker = Factory::create('fr_FR');
 
         $users = [];
         for ($i = 0; $i < 50; $i++) {
-            $user=new User();
+            $user = new User();
             $user
                 ->setEmail($faker->unique()->email())
                 ->setPassword($this->userPasswordHasher->hashPassword($user, '123456'))
@@ -173,21 +146,19 @@ class AppFixtures extends Fixture
                 ->setLastname($faker->lastName())
                 ->setPhone($faker->phoneNumber())
                 ->setActive(true)
-                ->setCampus($faker->randomElement($campusList));
+                ->setCampus($campusList[0]);
 
             $users[] = $user;
-
-//
-
             $manager->persist($user);
         }
-        $manager->flush();
+        return $users;
     }
 
-    public function event(ObjectManager $manager, array $users, array $statusList, array $locationList, array $categoryList){
+    public function event(ObjectManager $manager, array $users, array $statusList, array $locationList): array
+    {
         $faker = Factory::create('fr_FR');
-        $events=[];
-        $durations=[
+        $events = [];
+        $durations = [
             new \DateInterval('PT30M'),
             new \DateInterval('PT1H'),
             new \DateInterval('PT1H30M'),
@@ -203,22 +174,22 @@ class AppFixtures extends Fixture
 
         for ($i = 0; $i < 50; $i++) {
 
-            $event=new Event();
+            $event = new Event();
             $organizer = $faker->randomElement($users);
             $randomLocation = $faker->randomElement($locationList);
             $event
                 ->setName($faker->sentence())
                 ->setinfosEvent($faker->paragraph())
-                ->setnbInscriptionMax($faker->numberBetween(2,15))
+                ->setnbMaxRegistrations($faker->numberBetween(2, 15))
                 ->setDuration($faker->randomElement($durations))
                 ->setDateStartHour($faker->dateTimeBetween('now', '+30 day'))
                 ->setDateEndHour($faker->dateTimeBetween('now', '+30 day'))
-                ->setDateLimiteInscription($faker->dateTimeBetween('now',$event->getDateStartHour()))
+                ->setregistrationDeadline($faker->dateTimeBetween('now', $event->getDateStartHour()))
                 ->setOrganizer($organizer)
                 ->setEventStatus($faker->randomElement($statusList))
                 ->setEventLocation($randomLocation)
-                ->setEventCategory($faker->randomElement($categoryList));
-            $maxParticipants = min($event->getNbInscriptionMax(), count($users) - 1);
+                ->setCampus($organizer->getCampus());
+            $maxParticipants = min($event->getnbMaxRegistrations(), count($users) - 1);
             $nbParticipants = $faker->numberBetween(0, $maxParticipants);
             $shuffledUsers = $users;
             shuffle($shuffledUsers);
@@ -230,8 +201,7 @@ class AppFixtures extends Fixture
             }
             $manager->persist($event);
         }
-        $manager->flush();
+        return $events;
     }
-
 
 }
