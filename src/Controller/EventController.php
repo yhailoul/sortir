@@ -61,7 +61,7 @@ class EventController extends AbstractController
         ]);
 }
 
-    #[Route('/create', name: 'event_create', methods: ['POST', 'GET'])]
+    #[Route('/create', name: 'create', methods: ['POST', 'GET'])]
     public function createEvent(
         EntityManagerInterface $entityManager,
         Request $request,
@@ -84,6 +84,9 @@ class EventController extends AbstractController
                 );
             }
 
+            $duration = $event->getDateStartHour()->diff($event->getDateEndHour());
+            $event->setDuration($duration);
+
             $entityManager->persist($event);
             $entityManager->flush();
 
@@ -96,5 +99,53 @@ class EventController extends AbstractController
         return $this->render('event/create.html.twig', [
             'eventForm' => $eventForm->createView(),
         ]);
+    }
+
+
+    #[ROUTE('/edit/{id}', name: 'edit', requirements: ['id' => '\d+'])]
+    public function editEvent(
+        int $id,
+        EventRepository $eventRepository,
+        EntityManagerInterface $entityManager,
+        Request $request,
+        FileUploader $fileUploader
+    ): Response
+    {
+        $event = $eventRepository->find($id);
+
+        $eventForm = $this->createForm(EventType::class, $event);
+        $eventForm->handleRequest($request);
+        if ($eventForm->isSubmitted() && $eventForm->isValid()){
+            $duration = $event->getDateStartHour()->diff($event->getDateEndHour());
+            $event->setDuration($duration);
+            $entityManager->persist($event);
+            $entityManager->flush();
+            $this->addFlash('success', 'Event edited!');
+
+            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+        }
+        return $this->render('event/edit.html.twig', [
+            'eventFormEdit' => $eventForm->createView()
+        ]);
+    }
+
+    #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '\d+'])]
+    public function deleteEvent(
+        int $id,
+        EventRepository $eventRepository,
+        EntityManagerInterface $entityManager
+    ): Response
+    {
+        $event = $eventRepository->find($id);
+
+        if (!$event) {
+            throw $this->createNotFoundException('There is not event with the id '.$id);
+        }
+
+        $entityManager->remove($event);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Event deleted!');
+        return $this->redirectToRoute('events_list', ['page' => 1]);
     }
 }
