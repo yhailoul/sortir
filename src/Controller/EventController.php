@@ -6,11 +6,9 @@ use App\Entity\Event;
 use App\Entity\User;
 use App\Form\EventType;
 use App\Form\FilterSearchType;
-use App\Form\ListSortingType;
 use App\Form\Model\FilterSearch;
 use App\Repository\EventRepository;
-use App\Repository\UserRepository;
-use App\Utils\FileUploader;
+use App\Service\FileUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -71,21 +69,12 @@ class EventController extends AbstractController
     ): Response
     {
         $event = new Event();
-        $eventForm = $this->createForm(Event::class, $event);
+        $eventForm = $this->createForm(EventType::class, $event);
 
         $eventForm->handleRequest($request);
 
         if ($eventForm->isSubmitted() && $eventForm->isValid()) {
-            /**
-             * @var UploadedFile $file
-             */
-            $file = $eventForm->get('backdrop')->getData();
-            if ($file) {
-                $event->setBackdrop(
-                    $fileUploader->upload($file, 'assets/images/backdrops', $event->getName())
-                );
-            }
-
+            $this->handleFileUploads($event, $eventForm, $fileUploader);
             $duration = $event->getDateStartHour()->diff($event->getDateEndHour());
             $event->setDuration($duration);
 
@@ -95,7 +84,6 @@ class EventController extends AbstractController
             $this->addFlash('success', 'Event created!');
 
             return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
-
         }
 
         return $this->render('event/create.html.twig', [
@@ -118,6 +106,7 @@ class EventController extends AbstractController
         $eventForm = $this->createForm(EventType::class, $event);
         $eventForm->handleRequest($request);
         if ($eventForm->isSubmitted() && $eventForm->isValid()) {
+            $this->handleFileUploads($event, $eventForm, $fileUploader);
             $duration = $event->getDateStartHour()->diff($event->getDateEndHour());
             $event->setDuration($duration);
             $entityManager->persist($event);
@@ -152,24 +141,25 @@ class EventController extends AbstractController
     }
 
     #[Route('/{id}/register', name: 'register', requirements: ['id' => '\d+'])]
-    public function registerEvent(Event $event, EntityManagerInterface $entityManager): Response {
+    public function registerEvent(Event $event, EntityManagerInterface $entityManager): Response
+    {
         $user = $this->getUser();
 
         // Vérifie si le user est déjà inscrit
-        if($event->getParticipantList()->contains($user)){
+        if ($event->getParticipantList()->contains($user)) {
             $this->addFlash('warning', 'Event already registered!');
             return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
         }
 
         // Vérifie la date limite d'inscription
-        if($event->getRegistrationDeadline() < new \DateTime()){
+        if ($event->getRegistrationDeadline() < new \DateTime()) {
             $this->addFlash('danger', 'The registration deadline has passed!');
             return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
         }
 
 
         // Vérifie le nombre de places
-        if($event->getParticipantList()->count() >= $event->getNbMaxRegistrations()) {
+        if ($event->getParticipantList()->count() >= $event->getNbMaxRegistrations()) {
             $this->addFlash('danger', 'There are maximum number of participants!');
             return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
         }
@@ -181,5 +171,23 @@ class EventController extends AbstractController
         $this->addFlash('success', 'Event registered!');
         return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
 
+    }
+
+    private function handleFileUploads(Event $event, $form, FileUploader $fileUploader): void
+    {
+
+        $imageFile = $form->get('eventPhoto')->getData();
+
+        if ($imageFile) {
+            $oldPhoto = $event->getPhoto();
+            $event->setPhoto($fileUploader->upload($imageFile));
+
+            if ($oldPhoto) {
+                //Récupère le chemin complet de l'ancienne image
+                $fullPath = $fileUploader->getTargetDirectory() . '/' . $oldPhoto;
+                //La supprime
+                unlink($fullPath);
+            }
+        }
     }
 }
