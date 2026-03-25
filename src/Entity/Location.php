@@ -33,11 +33,9 @@ class Location
     #[ORM\OneToMany(targetEntity: Event::class, mappedBy: 'eventLocation')]
     private Collection $events;
 
-    /**
-     * @var Collection<int, City>
-     */
     #[ORM\ManyToOne(inversedBy: 'locationsList')]
-    private City $city;
+    #[ORM\JoinColumn(nullable: false)]
+    private ?City $city;
 
 
     public function __construct()
@@ -130,16 +128,12 @@ class Location
         return $this;
     }
 
-    /**
-     * @return Collection<int, City>
-     */
-
-    public function getCity(): Collection
+    public function getCity(): City
     {
         return $this->city;
     }
 
-    public function addCity(City $city): static
+    public function setCity(?City $city): static
     {
         $this->city= $city;
         return $this;
