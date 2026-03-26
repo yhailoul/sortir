@@ -7,7 +7,7 @@ use App\Entity\Event;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 
-class EventRegistrationMananger
+readonly class EventRegistrationManager
 {
 
     public function __construct(

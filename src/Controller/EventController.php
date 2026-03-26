@@ -8,13 +8,12 @@ use App\Form\EventType;
 use App\Form\FilterSearchType;
 use App\Form\Model\FilterSearch;
 use App\Repository\EventRepository;
-use App\Service\EventRegistrationMananger;
+use App\Service\EventRegistrationManager;
 use App\Service\FileUploader;
 use App\Service\StatusManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -152,7 +151,7 @@ class EventController extends AbstractController
     }
 
     #[Route('/{id}/register', name: 'register', requirements: ['id' => '\d+'])]
-    public function registerEvent(Event $event, EventRegistrationMananger $eventRegistrationMananger): Response
+    public function registerEvent(Event $event, EventRegistrationManager $eventRegistrationMananger): Response
     {
         $user = $this->getUser();
 
@@ -170,7 +169,7 @@ class EventController extends AbstractController
     }
 
     #[Route('/{id}/unsubscribe', name: 'unsubscribe', requirements: ['id' => '\d+'])]
-    public function unsubscribeEvent(Event $event, EventRegistrationMananger $eventRegistrationMananger): Response
+    public function unsubscribeEvent(Event $event, EventRegistrationManager $eventRegistrationMananger): Response
     {
         $user = $this->getUser();
 
@@ -187,8 +186,7 @@ class EventController extends AbstractController
         return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
     }
 
-    private
-    function handleFileUploads(Event $event, $form, FileUploader $fileUploader): void
+    private function handleFileUploads(Event $event, $form, FileUploader $fileUploader): void
     {
 
         $imageFile = $form->get('eventPhoto')->getData();
