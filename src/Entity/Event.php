@@ -61,10 +61,6 @@ class Event
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $photo = null;
 
-    #[ORM\ManyToOne(inversedBy: 'events')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?State $state = null;
-
 
 
     public function __construct()
@@ -244,18 +240,6 @@ class Event
     public function setPhoto(?string $photo): static
     {
         $this->photo = $photo;
-
-        return $this;
-    }
-
-    public function getState(): ?State
-    {
-        return $this->state;
-    }
-
-    public function setState(?State $state): static
-    {
-        $this->state = $state;
 
         return $this;
     }
