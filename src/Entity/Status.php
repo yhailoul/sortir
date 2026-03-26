@@ -6,25 +6,27 @@ use App\Repository\StatusRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: StatusRepository::class)]
 class Status
 {
 
     const IN_CREATION = 'In creation';
-    const OPEN     = 'Open';
-    const CLOSED    = 'Closed';
-    const IN_PROGRESS    = 'In progress';
-    const ENDED    = 'Ended';
-    const CANCELED     = 'Canceled';
-    const HISTORIZED  = 'Historized';
+    const OPEN = 'Open';
+    const CLOSED = 'Closed';
+    const IN_PROGRESS = 'In progress';
+    const ENDED = 'Ended';
+    const CANCELED = 'Canceled';
+    const HISTORIZED = 'Historized';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 30)]
+    #[Assert\NotBlank]
     private ?string $label = null;
 
     /**
