@@ -72,11 +72,13 @@ class EventController extends AbstractController
         $eventForm = $this->createForm(EventType::class, $event);
 
         $eventForm->handleRequest($request);
+        $user = $this->getUser();
 
         if ($eventForm->isSubmitted() && $eventForm->isValid()) {
             $this->handleFileUploads($event, $eventForm, $fileUploader);
             $duration = $event->getDateStartHour()->diff($event->getDateEndHour());
             $event->setDuration($duration);
+            $event->addParticipantList($user);
 
             $entityManager->persist($event);
             $entityManager->flush();
