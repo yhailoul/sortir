@@ -20,6 +20,7 @@
                     <article>
                         <p>{{ loop.index }} : {{ ev.name }}</p>
                         <a href="{{ path('events_register', {'id': ev.id}) }}">Register</a>
+                        <a href="{{ path('events_unsubscribe', {'id': ev.id}) }}">Unsubscribe</a>
                     </article>
                 {% endfor %}
             <br>
@@ -28,6 +29,7 @@
                     <article>
                         <p>{{ loop.index }} : {{ event.name }}</p>
                         <a href="{{ path('events_register', {'id': event.id}) }}">Register</a>
+                        <a href="{{ path('events_unsubscribe', {'id': event.id}) }}">Unsubscribe</a>
                    </article>
                     {% endfor %}
 

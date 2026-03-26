@@ -175,6 +175,26 @@ class EventController extends AbstractController
 
     }
 
+    #[Route('/{id}/unsubscribe', name: 'unsubscribe', requirements: ['id' => '\d+'])]
+    public function unsubscribeEvent(Event $event, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+
+        // Vérifie si le user est inscrit
+        if (!$event->getParticipantList()->contains($user)) {
+            $this->addFlash('warning', 'You are not registered for this event.');
+            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+        }
+
+        $event->removeParticipantList($user);
+        $entityManager->persist($event);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'You have unsubscribed from the event !');
+        return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+
+    }
+
     private function handleFileUploads(Event $event, $form, FileUploader $fileUploader): void
     {
 
