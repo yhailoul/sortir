@@ -3,7 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Entity\Campus;
-use App\Entity\Category;
+//use App\Entity\Category;
 use App\Entity\City;
 use App\Entity\Event;
 use App\Entity\Status;
@@ -35,13 +35,13 @@ class AppFixtures extends Fixture
 
         $this->campus($manager);
         $this->status($manager);
-        $this->category($manager);
+        //$this->category($manager);
         $this->city($manager);
         $this->location($manager);
         // Récupérer les objets créés pour les réutiliser
         $campusList = $manager->getRepository(Campus::class)->findAll();
         $statusList = $manager->getRepository(Status::class)->findAll();
-        $categoryList = $manager->getRepository(Category::class)->findAll();
+        //$categoryList = $manager->getRepository(Category::class)->findAll();
         $cityList = $manager->getRepository(City::class)->findAll();
         $locationList = $manager->getRepository(Location::class)->findAll();
 
@@ -49,7 +49,7 @@ class AppFixtures extends Fixture
         // Passer ces listes aux méthodes qui en ont besoin
         $this->user($manager, $campusList);
         $users = $manager->getRepository(User::class)->findAll();
-        $this->event($manager, $users, $statusList, $locationList, $categoryList);
+        $this->event($manager, $users, $statusList, $locationList, $campusList);
 
     }
     public function campus(ObjectManager $manager){
@@ -93,33 +93,33 @@ class AppFixtures extends Fixture
         }
         $manager->flush();
     }
-    public function category(ObjectManager $manager){
-        //$faker = Factory::create('fr_FR');
-        $categories = [];
-        $categoryNames = [
-            'Gastronomy',
-            'Sport & Adventure ',
-            'Culture & Discoveries',
-            'Games & Entertainment',
-            'Gaming',
-            'Well-being & relaxation',
-            'Nature & Outdoors',
-            'Creativity et Workshops',
-            'Nightlife & Festivities',
-            'Unusual & Original'
-        ];
-
-
-        foreach ($categoryNames as $categoryName) {
-            $category = new Category();
-            $category->setLabel($categoryName);
-            $manager->persist($category);
-            $categories[] = $category;
-
-            // $manager->persist($category);
-        }
-        $manager->flush();
-    }
+//    public function category(ObjectManager $manager){
+//        //$faker = Factory::create('fr_FR');
+//        $categories = [];
+//        $categoryNames = [
+//            'Gastronomy',
+//            'Sport & Adventure ',
+//            'Culture & Discoveries',
+//            'Games & Entertainment',
+//            'Gaming',
+//            'Well-being & relaxation',
+//            'Nature & Outdoors',
+//            'Creativity et Workshops',
+//            'Nightlife & Festivities',
+//            'Unusual & Original'
+//        ];
+//
+//
+//        foreach ($categoryNames as $categoryName) {
+//            $category = new Category();
+//            $category->setLabel($categoryName);
+//            $manager->persist($category);
+//            $categories[] = $category;
+//
+//            // $manager->persist($category);
+//        }
+//        $manager->flush();
+//    }
 
     public function location(ObjectManager $manager){
         //fixtures pour Location
@@ -184,7 +184,7 @@ class AppFixtures extends Fixture
         $manager->flush();
     }
 
-    public function event(ObjectManager $manager, array $users, array $statusList, array $locationList, array $categoryList){
+    public function event(ObjectManager $manager, array $users, array $statusList, array $locationList, array $campusList){
         $faker = Factory::create('fr_FR');
         $events=[];
         $durations=[
@@ -206,19 +206,20 @@ class AppFixtures extends Fixture
             $event=new Event();
             $organizer = $faker->randomElement($users);
             $randomLocation = $faker->randomElement($locationList);
+            $randomCampus = $faker->randomElement($campusList);
             $event
                 ->setName($faker->sentence())
                 ->setinfosEvent($faker->paragraph())
-                ->setnbInscriptionMax($faker->numberBetween(2,15))
+                ->setNbMaxRegistrations($faker->numberBetween(2,15))
                 ->setDuration($faker->randomElement($durations))
                 ->setDateStartHour($faker->dateTimeBetween('now', '+30 day'))
                 ->setDateEndHour($faker->dateTimeBetween('now', '+30 day'))
-                ->setDateLimiteInscription($faker->dateTimeBetween('now',$event->getDateStartHour()))
+                ->setRegistrationDeadline($faker->dateTimeBetween('now',$event->getDateStartHour()))
                 ->setOrganizer($organizer)
                 ->setEventStatus($faker->randomElement($statusList))
-                ->setEventLocation($randomLocation)
-                ->setEventCategory($faker->randomElement($categoryList));
-            $maxParticipants = min($event->getNbInscriptionMax(), count($users) - 1);
+                ->setCampus($randomCampus)
+                ->setEventLocation($randomLocation);
+            $maxParticipants = min($event->getNbMaxRegistrations(), count($users) - 1);
             $nbParticipants = $faker->numberBetween(0, $maxParticipants);
             $shuffledUsers = $users;
             shuffle($shuffledUsers);
