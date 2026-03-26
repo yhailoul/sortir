@@ -7,13 +7,22 @@ use App\Entity\Status;
 use App\Repository\StatusRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
-readonly class StatusManager
+class StatusManager
 {
+    private array $statusTab;
+
     public function __construct(
-        private StatusRepository       $statusRepository,
-        private EntityManagerInterface $entityManager
+        private readonly StatusRepository       $statusRepository,
+        private readonly EntityManagerInterface $entityManager,
+
     )
     {
+        //Récupère tous les status une seule fois
+        $allStatus = $this->statusRepository->findAll();
+        foreach ($allStatus as $e) {
+            //Stocke l'objet avec le label en clé
+            $this->statusTab[$e->getLabel()] = $e;
+        }
     }
 
     public function updateEventStatus(Event $event): void
@@ -32,7 +41,7 @@ readonly class StatusManager
             $label = Status::OPEN;
         }
 
-        $status = $this->statusRepository->findOneBy(['label' => $label]);
+        $status = $this->statusTab[$label];
         if ($status) {
             $event->setEventStatus($status);
             $this->entityManager->persist($event);
