@@ -31,14 +31,14 @@ class EventController extends AbstractController
                                 CampusRepository $campusRepository): Response
     {
         $events = [];
-        $eventList = $eventRepository->findAll();
+        $eventList = $eventRepository->findEventsToUpdate();
         $user = $security->getUser();
         if (!$user instanceof User) {
             throw $this->createAccessDeniedException('utilisateur inexistant');
         }
 
 
-        foreach ($eventRepository->findAll() as $e) {
+        foreach ($eventList as $e) {
             $statusManager->updateEventStatus($e);
         }
         $entityManager->flush();
