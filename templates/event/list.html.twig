@@ -28,6 +28,7 @@
                     {% for event in eventList %}
                     <article>
                         <p>{{ loop.index }} : {{ event.name }}</p>
+                        <p>{{ event.eventStatus.label }}</p>
                         <a href="{{ path('events_register', {'id': event.id}) }}">Register</a>
                         <a href="{{ path('events_unsubscribe', {'id': event.id}) }}">Unsubscribe</a>
                    </article>

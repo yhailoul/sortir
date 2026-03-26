@@ -9,6 +9,7 @@ use App\Form\FilterSearchType;
 use App\Form\Model\FilterSearch;
 use App\Repository\EventRepository;
 use App\Service\FileUploader;
+use App\Service\StatusManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -21,7 +22,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class EventController extends AbstractController
 {
     #[Route('/list', name: 'list', methods: ['GET', 'POST'])]
-    public function list(Request $request, EventRepository $eventRepository, Security $security): Response
+    public function list(Request $request, EventRepository $eventRepository, Security $security, StatusManager $statusManager, EntityManagerInterface $entityManager): Response
     {
         $events = [];
         $eventList = $eventRepository->findAll();
@@ -29,6 +30,13 @@ class EventController extends AbstractController
         if (!$user instanceof User) {
             throw $this->createAccessDeniedException('utilisateur inexistant');
         }
+
+
+        foreach ($eventRepository->findAll() as $e) {
+            $statusManager->updateEventStatus($e);
+        }
+        $entityManager->flush();
+
         $eventSearch = new FilterSearch();
         $filterForm = $this->createForm(FilterSearchType::class, $eventSearch);
         $filterForm->handleRequest($request);
