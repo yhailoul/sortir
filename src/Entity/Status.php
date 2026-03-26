@@ -17,7 +17,7 @@ class Status
     const IN_PROGRESS    = 'In progress';
     const ENDED    = 'Ended';
     const CANCELED     = 'Canceled';
-    const HISTORIZED  = 'HISTORIZED';
+    const HISTORIZED  = 'Historized';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]

@@ -8,6 +8,7 @@ use App\Form\EventType;
 use App\Form\FilterSearchType;
 use App\Form\Model\FilterSearch;
 use App\Repository\EventRepository;
+use App\Service\EventRegistrationMananger;
 use App\Service\FileUploader;
 use App\Service\StatusManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -151,59 +152,43 @@ class EventController extends AbstractController
     }
 
     #[Route('/{id}/register', name: 'register', requirements: ['id' => '\d+'])]
-    public function registerEvent(Event $event, EntityManagerInterface $entityManager): Response
+    public function registerEvent(Event $event, EventRegistrationMananger $eventRegistrationMananger): Response
     {
         $user = $this->getUser();
 
-        // Vérifie si le user est déjà inscrit
-        if ($event->getParticipantList()->contains($user)) {
-            $this->addFlash('warning', 'Event already registered!');
-            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+        //Récupère soit le texte de l'erreur soit null si tout s'est bien passé
+        $error = $eventRegistrationMananger->subscribeCheck($event, $user);
+
+        //Si erreur
+        if ($error) {
+            $this->addFlash('danger', $error);
+        } else {
+            $this->addFlash('success', 'Event registered!');
+
         }
-
-        // Vérifie la date limite d'inscription
-        if ($event->getRegistrationDeadline() < new \DateTime()) {
-            $this->addFlash('danger', 'The registration deadline has passed!');
-            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
-        }
-
-
-        // Vérifie le nombre de places
-        if ($event->getParticipantList()->count() >= $event->getNbMaxRegistrations()) {
-            $this->addFlash('danger', 'There are maximum number of participants!');
-            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
-        }
-
-        $event->addParticipantList($user);
-        $entityManager->persist($event);
-        $entityManager->flush();
-
-        $this->addFlash('success', 'Event registered!');
         return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
-
     }
 
     #[Route('/{id}/unsubscribe', name: 'unsubscribe', requirements: ['id' => '\d+'])]
-    public function unsubscribeEvent(Event $event, EntityManagerInterface $entityManager): Response
+    public function unsubscribeEvent(Event $event, EventRegistrationMananger $eventRegistrationMananger): Response
     {
         $user = $this->getUser();
 
-        // Vérifie si le user est inscrit
-        if (!$event->getParticipantList()->contains($user)) {
-            $this->addFlash('warning', 'You are not registered for this event.');
-            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+        //Récupère soit le texte de l'erreur soit null si tout s'est bien passé
+        $error = $eventRegistrationMananger->unsubscribeCheck($event, $user);
+
+        //Si erreur
+        if ($error) {
+            $this->addFlash('danger', $error);
+        } else {
+            $this->addFlash('success', 'You have been unsubscribed from the event !');
+
         }
-
-        $event->removeParticipantList($user);
-        $entityManager->persist($event);
-        $entityManager->flush();
-
-        $this->addFlash('success', 'You have unsubscribed from the event !');
         return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
-
     }
 
-    private function handleFileUploads(Event $event, $form, FileUploader $fileUploader): void
+    private
+    function handleFileUploads(Event $event, $form, FileUploader $fileUploader): void
     {
 
         $imageFile = $form->get('eventPhoto')->getData();
