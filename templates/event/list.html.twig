@@ -4,7 +4,10 @@
 {% endblock %}
 
 {% block body %}
-
+<div class="containerSignedInUser">
+    <h3>Date du jour: {{ 'now' | date('d/m/Y H:i') }}</h3>
+    <h3>Participant: {{ app.user.firstname }} {{ app.user.lastname }}</h3>
+</div>
     <div class="content">
         <h2>event List</h2>
         <div class="searchBar">
@@ -12,35 +15,53 @@
             {{ form_widget(filterForm) }}
             <button>Search</button>
             {{ form_end(filterForm) }}
-{#            {{form_start(campusFilterForm) }}#}
-{#            {{ form_widget(campusFilterForm) }}#}
-{#            <button>Search</button>#}
-{#            {{ form_end(campusFilterForm) }}#}
 
         </div>
         <section>
 
-            <p>événements choisis par filtres </p>
-                {% for ev in events %}
-                    <article>
-                        <p>{{ loop.index }} : {{ ev.name }} ({{ ev.campus.name }}  {{ ev.dateStartHour|date('d/m/Y') }})</p>
-                    </article>
-                {% endfor %}
+            <div class="max-h-96 overflow-y-auto overflow-x-auto border rounded-lg">
+                <table class="min-w-full table-auto text-sm">
+                    <thead>
+                    <tr>Event title</tr>
+                    <tr>Date of the event</tr>
+                    <tr>Closing date</tr>
+                    <tr>Places Left</tr>
+                    <tr>Status</tr>
+                    <tr>Signed-up</tr>
+                    <tr>Organizer</tr>
+                    <tr>Actions</tr>
+                    </thead>
+                    <tbody>
+                    {% for event in events %}
+                    <tr>
+                        <td>{{ event.name }}</td>
+                        <td>{{ event.dateStartHour|date('d/m/Y') }}</td>
+                        <td>{{ event.registrationDeadline|date('d/m/Y') }}</td>
+                        <td>{{ event.participantList|length }}/{{ event.nbMaxRegistrations }}</td>
+                        <td>{{ event.eventStatus.label }}</td>
+                        <td>
+                            {% if app.user in event.participantList or event.organizer  %}
+                            <span>✓</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ event.organizer.username }}</td>
+                        <td>
+                            {% if app.user in event.participantList %}
+                                <span><a>Show</a></span>
+                                <span><a>Withdraw</a></span>
+                            {% elseif app.user in event.organizer and event.registrationDeadline > date('now') %}
+                                <span><a>Show</a></span>
+                                <span><a>Modify</a></span>
+                            {% else %}
+                                <span><a>Show</a></span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             <br>
-{#            <p>événements choisis par campus </p>#}
-{#            {% for ev in campusEventList %}#}
-{#                <article>#}
-{#                    <p>{{ loop.index }} : {{ ev.name }}</p>#}
-{#                </article>#}
-{#            {% endfor %}#}
-{#            <br>#}
-{#               <p>tous les événements </p>#}
-{#                    {% for event in eventList %}#}
-{#                    <article>#}
-{#                        <p>{{ loop.index }} : {{ event.name }}</p>#}
-{#                   </article>#}
-{#                    {% endfor %}#}
-
         </section>
     </div>
 
