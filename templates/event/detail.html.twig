@@ -20,9 +20,14 @@
             <p>Latitude : {{ event.eventLocation.latitude }}</p>
             <p>Longitude : {{ event.eventLocation.longitude }}</p>
             <img src="{{ asset('uploads/' ~ event.photo) }}" alt="{{ event.name }}">
+            {% for participant in event.participantList %}
+                <p>{{ loop.index }} : {{ participant.username }}</p>
+            {% endfor %}
 
         </div>
         <div>
+            <a href="{{ path('events_register', {'id': event.id}) }}">Register</a>
+            <a href="{{ path('events_unsubscribe', {'id': event.id}) }}">Unsubscribe</a>
             <a href="{{ path('events_edit', {'id': event.id}) }}">Update</a>
             <a onclick="return confirm('Do you really want to delete {{ event.name }} ?')"
                href="{{ path('events_delete', {'id': event.id}) }}">Delete</a>
