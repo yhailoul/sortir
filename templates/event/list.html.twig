@@ -12,22 +12,34 @@
             {{ form_widget(filterForm) }}
             <button>Search</button>
             {{ form_end(filterForm) }}
+{#            {{form_start(campusFilterForm) }}#}
+{#            {{ form_widget(campusFilterForm) }}#}
+{#            <button>Search</button>#}
+{#            {{ form_end(campusFilterForm) }}#}
+
         </div>
         <section>
 
-            <p>événements choisis</p>
+            <p>événements choisis par filtres </p>
                 {% for ev in events %}
                     <article>
-                        <p>{{ loop.index }} : {{ ev.name }}</p>
+                        <p>{{ loop.index }} : {{ ev.name }} ({{ ev.campus.name }}  {{ ev.dateStartHour|date('d/m/Y') }})</p>
                     </article>
                 {% endfor %}
             <br>
-               <p>tous les événements </p>
-                    {% for event in eventList %}
-                    <article>
-                        <p>{{ loop.index }} : {{ event.name }}</p>
-                   </article>
-                    {% endfor %}
+{#            <p>événements choisis par campus </p>#}
+{#            {% for ev in campusEventList %}#}
+{#                <article>#}
+{#                    <p>{{ loop.index }} : {{ ev.name }}</p>#}
+{#                </article>#}
+{#            {% endfor %}#}
+{#            <br>#}
+{#               <p>tous les événements </p>#}
+{#                    {% for event in eventList %}#}
+{#                    <article>#}
+{#                        <p>{{ loop.index }} : {{ event.name }}</p>#}
+{#                   </article>#}
+{#                    {% endfor %}#}
 
         </section>
     </div>

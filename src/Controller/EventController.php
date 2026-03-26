@@ -2,12 +2,15 @@
 
 namespace App\Controller;
 
+use App\Entity\Campus;
 use App\Entity\Event;
 use App\Entity\User;
+use App\Form\CampusFilterType;
 use App\Form\EventType;
 use App\Form\FilterSearchType;
 use App\Form\ListSortingType;
 use App\Form\Model\FilterSearch;
+use App\Repository\CampusRepository;
 use App\Repository\EventRepository;
 use App\Repository\UserRepository;
 use App\Utils\FileUploader;
@@ -22,22 +25,40 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('events', name: 'events_')]
 class EventController extends AbstractController
 {
-    #[Route('/list', name: 'list', methods: ['GET','POST'])]
-    public function listFilters(Request $request, EventRepository $eventRepository, Security $security): Response
-    {   $events=[];
-        $eventList = $eventRepository->findAll();
+    #[Route('/list', name: 'listFilters', methods: ['GET','POST'])]
+    public function listFilters(Request $request,
+                                EventRepository $eventRepository,
+                                Security $security,
+                                CampusRepository $campusRepository): Response
+    {
         $user = $security->getUser();
         if (!$user instanceof User) {
             throw $this->createAccessDeniedException('utilisateur inexistant');
         }
+
+        $events=[];
+        $eventList = $eventRepository->findAll();
+
         $eventSearch = new FilterSearch();
         $filterForm = $this->createForm(FilterSearchType::class, $eventSearch);
         $filterForm->handleRequest($request);
+        $formData = $filterForm->getData();
 
-         if ($filterForm->isSubmitted()) {
-
-           $events = $eventRepository->filterBySelection($user, $eventSearch);
-            //dd($events);
+//         if($request->query->has('campus')){
+//             $campusId = $request->query->get('campus');
+//             if($campusId){
+//                 $campus=$campusRepository->find($campusId);
+//                 $eventSearch->setCampus($campus);
+//             }
+//         }
+         if ($filterForm->isSubmitted() ) {
+             $campus= $eventSearch->getCampus();
+             $events = $eventRepository->filterBySelection($user, $eventSearch, $campus );
+//             dump('données du formulaire '.$formData);
+//             $startDate = $eventSearch->getStartDate();
+//             dump('campus dans eventSearch ' . ($startDate ? $startDate->format('Y-m-d H:i:s') : 'null'));
+//
+//             dd($events);
         }
         return $this->render('event/list.html.twig', [
             'events' => $events,
