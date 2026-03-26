@@ -8,12 +8,10 @@ use App\Entity\User;
 use App\Form\CampusFilterType;
 use App\Form\EventType;
 use App\Form\FilterSearchType;
-use App\Form\ListSortingType;
 use App\Form\Model\FilterSearch;
 use App\Repository\CampusRepository;
 use App\Repository\EventRepository;
-use App\Repository\UserRepository;
-use App\Utils\FileUploader;
+use App\Service\FileUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -69,70 +67,38 @@ class EventController extends AbstractController
 
     }
 
-    #[Route('/{page}', name: 'list', requirements: ['page' => '\d+'])]
-    public function list(
-        EventRepository $eventRepository,
-        int $page = 1): Response
-    {
-        $nbEvents = $eventRepository->count();
-        $maxPages = max(1, ceil($nbEvents / 20));
-
-        if ($page > $maxPages) {
-            throw $this->createNotFoundException("The page $page does not exist.");
-        }
-
-        if ($page < 1) {
-            return $this->redirectToRoute('events_list', ['page' => 1]);
-        }
-
-        $events = $eventRepository->findBy([], [], 20, ($page - 1) * 20);
-
-        return $this->render('event/list.html.twig', [
-            'events' => $events,
-            'currentPage' => $page,
-            'maxPages' => $maxPages,
-        ]);
-    }
-
     #[Route('/detail/{id}', name: 'detail', requirements: ['id' => '\d+'])]
-    public function detail(int $id, EventRepository $eventRepository): Response{
+    public function detail(int $id, EventRepository $eventRepository): Response
+    {
         $event = $eventRepository->find($id);
-         if (!$event) {
-             throw $this->createNotFoundException('Pas de event avec ce id '.$id);
-         }
+        if (!$event) {
+            throw $this->createNotFoundException('Pas de event avec ce id ' . $id);
+        }
 
 
         return $this->render('event/detail.html.twig', [
             'event' => $event
         ]);
-}
+    }
 
     #[Route('/create', name: 'create', methods: ['POST', 'GET'])]
     public function createEvent(
         EntityManagerInterface $entityManager,
-        Request $request,
-        FileUploader $fileUploader
+        Request                $request,
+        FileUploader           $fileUploader
     ): Response
     {
         $event = new Event();
         $eventForm = $this->createForm(EventType::class, $event);
 
         $eventForm->handleRequest($request);
+        $user = $this->getUser();
 
-        if ($eventForm->isSubmitted() && $eventForm->isValid()){
-//            /**
-//             * @var UploadedFile $file
-//             */
-//            $file =$eventForm->get('backdrop')->getData();
-//            if($file){
-//                $event->setBackdrop(
-//                    $fileUploader->upload($file, 'assets/images/backdrops', $event->getName())
-//                );
-//            }
-
-
+        if ($eventForm->isSubmitted() && $eventForm->isValid()) {
+            $this->handleFileUploads($event, $eventForm, $fileUploader);
             $duration = $event->getDateStartHour()->diff($event->getDateEndHour());
             $event->setDuration($duration);
+            $event->addParticipantList($user);
 
             $entityManager->persist($event);
             $entityManager->flush();
@@ -148,20 +114,22 @@ class EventController extends AbstractController
         ]);
     }
 
+
     #[ROUTE('/edit/{id}', name: 'edit', requirements: ['id' => '\d+'])]
     public function editEvent(
-        int $id,
-        EventRepository $eventRepository,
+        int                    $id,
+        EventRepository        $eventRepository,
         EntityManagerInterface $entityManager,
-        Request $request,
-        FileUploader $fileUploader
+        Request                $request,
+        FileUploader           $fileUploader
     ): Response
     {
         $event = $eventRepository->find($id);
 
         $eventForm = $this->createForm(EventType::class, $event);
         $eventForm->handleRequest($request);
-        if ($eventForm->isSubmitted() && $eventForm->isValid()){
+        if ($eventForm->isSubmitted() && $eventForm->isValid()) {
+            $this->handleFileUploads($event, $eventForm, $fileUploader);
             $duration = $event->getDateStartHour()->diff($event->getDateEndHour());
             $event->setDuration($duration);
             $entityManager->persist($event);
@@ -177,15 +145,15 @@ class EventController extends AbstractController
 
     #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '\d+'])]
     public function deleteEvent(
-        int $id,
-        EventRepository $eventRepository,
+        int                    $id,
+        EventRepository        $eventRepository,
         EntityManagerInterface $entityManager
     ): Response
     {
         $event = $eventRepository->find($id);
 
         if (!$event) {
-            throw $this->createNotFoundException('There is not event with the id '.$id);
+            throw $this->createNotFoundException('There is not event with the id ' . $id);
         }
 
         $entityManager->remove($event);
@@ -195,5 +163,74 @@ class EventController extends AbstractController
         return $this->redirectToRoute('events_list', ['page' => 1]);
     }
 
+    #[Route('/{id}/register', name: 'register', requirements: ['id' => '\d+'])]
+    public function registerEvent(Event $event, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
 
+        // Vérifie si le user est déjà inscrit
+        if ($event->getParticipantList()->contains($user)) {
+            $this->addFlash('warning', 'Event already registered!');
+            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+        }
+
+        // Vérifie la date limite d'inscription
+        if ($event->getRegistrationDeadline() < new \DateTime()) {
+            $this->addFlash('danger', 'The registration deadline has passed!');
+            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+        }
+
+
+        // Vérifie le nombre de places
+        if ($event->getParticipantList()->count() >= $event->getNbMaxRegistrations()) {
+            $this->addFlash('danger', 'There are maximum number of participants!');
+            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+        }
+
+        $event->addParticipantList($user);
+        $entityManager->persist($event);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Event registered!');
+        return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+
+    }
+
+    #[Route('/{id}/unsubscribe', name: 'unsubscribe', requirements: ['id' => '\d+'])]
+    public function unsubscribeEvent(Event $event, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+
+        // Vérifie si le user est inscrit
+        if (!$event->getParticipantList()->contains($user)) {
+            $this->addFlash('warning', 'You are not registered for this event.');
+            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+        }
+
+        $event->removeParticipantList($user);
+        $entityManager->persist($event);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'You have unsubscribed from the event !');
+        return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+
+    }
+
+    private function handleFileUploads(Event $event, $form, FileUploader $fileUploader): void
+    {
+
+        $imageFile = $form->get('eventPhoto')->getData();
+
+        if ($imageFile) {
+            $oldPhoto = $event->getPhoto();
+            $event->setPhoto($fileUploader->upload($imageFile));
+
+            if ($oldPhoto) {
+                //Récupère le chemin complet de l'ancienne image
+                $fullPath = $fileUploader->getTargetDirectory() . '/' . $oldPhoto;
+                //La supprime
+                unlink($fullPath);
+            }
+        }
+    }
 }
