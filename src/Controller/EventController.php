@@ -11,11 +11,12 @@ use App\Form\FilterSearchType;
 use App\Form\Model\FilterSearch;
 use App\Repository\CampusRepository;
 use App\Repository\EventRepository;
+use App\Service\EventRegistrationManager;
 use App\Service\FileUploader;
+use App\Service\StatusManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -26,16 +27,21 @@ class EventController extends AbstractController
     #[Route('/list', name: 'listFilters', methods: ['GET','POST'])]
     public function listFilters(Request $request,
                                 EventRepository $eventRepository,
-                                Security $security,
+                                Security $security, StatusManager $statusManager, EntityManagerInterface $entityManager,
                                 CampusRepository $campusRepository): Response
     {
+        $events = [];
+        $eventList = $eventRepository->findAll();
         $user = $security->getUser();
         if (!$user instanceof User) {
             throw $this->createAccessDeniedException('utilisateur inexistant');
         }
 
-        $events=[];
-        $eventList = $eventRepository->findAll();
+
+        foreach ($eventRepository->findAll() as $e) {
+            $statusManager->updateEventStatus($e);
+        }
+        $entityManager->flush();
 
         $eventSearch = new FilterSearch();
         $filterForm = $this->createForm(FilterSearchType::class, $eventSearch);
@@ -106,7 +112,6 @@ class EventController extends AbstractController
             $this->addFlash('success', 'Event created!');
 
             return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
-
         }
 
         return $this->render('event/create.html.twig', [
@@ -164,56 +169,39 @@ class EventController extends AbstractController
     }
 
     #[Route('/{id}/register', name: 'register', requirements: ['id' => '\d+'])]
-    public function registerEvent(Event $event, EntityManagerInterface $entityManager): Response
+    public function registerEvent(Event $event, EventRegistrationManager $eventRegistrationMananger): Response
     {
         $user = $this->getUser();
 
-        // Vérifie si le user est déjà inscrit
-        if ($event->getParticipantList()->contains($user)) {
-            $this->addFlash('warning', 'Event already registered!');
-            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+        //Récupère soit le texte de l'erreur soit null si tout s'est bien passé
+        $error = $eventRegistrationMananger->subscribeCheck($event, $user);
+
+        //Si erreur
+        if ($error) {
+            $this->addFlash('danger', $error);
+        } else {
+            $this->addFlash('success', 'Event registered!');
+
         }
-
-        // Vérifie la date limite d'inscription
-        if ($event->getRegistrationDeadline() < new \DateTime()) {
-            $this->addFlash('danger', 'The registration deadline has passed!');
-            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
-        }
-
-
-        // Vérifie le nombre de places
-        if ($event->getParticipantList()->count() >= $event->getNbMaxRegistrations()) {
-            $this->addFlash('danger', 'There are maximum number of participants!');
-            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
-        }
-
-        $event->addParticipantList($user);
-        $entityManager->persist($event);
-        $entityManager->flush();
-
-        $this->addFlash('success', 'Event registered!');
         return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
-
     }
 
     #[Route('/{id}/unsubscribe', name: 'unsubscribe', requirements: ['id' => '\d+'])]
-    public function unsubscribeEvent(Event $event, EntityManagerInterface $entityManager): Response
+    public function unsubscribeEvent(Event $event, EventRegistrationManager $eventRegistrationMananger): Response
     {
         $user = $this->getUser();
 
-        // Vérifie si le user est inscrit
-        if (!$event->getParticipantList()->contains($user)) {
-            $this->addFlash('warning', 'You are not registered for this event.');
-            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+        //Récupère soit le texte de l'erreur soit null si tout s'est bien passé
+        $error = $eventRegistrationMananger->unsubscribeCheck($event, $user);
+
+        //Si erreur
+        if ($error) {
+            $this->addFlash('danger', $error);
+        } else {
+            $this->addFlash('success', 'You have been unsubscribed from the event !');
+
         }
-
-        $event->removeParticipantList($user);
-        $entityManager->persist($event);
-        $entityManager->flush();
-
-        $this->addFlash('success', 'You have unsubscribed from the event !');
         return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
-
     }
 
     private function handleFileUploads(Event $event, $form, FileUploader $fileUploader): void
