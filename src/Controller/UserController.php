@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\UserType;
 use App\Repository\UserRepository;
-use App\Service\DefaultAvatarService;
+use App\Service\AvatarService;
 use App\Service\FileUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -31,11 +31,11 @@ final class UserController extends AbstractController
     #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
     #[isGranted('ROLE_ADMIN')]
 
-    public function new(Request $request,
-                        EntityManagerInterface $entityManager,
+    public function new(Request                     $request,
+                        EntityManagerInterface      $entityManager,
                         UserPasswordHasherInterface $userPasswordHasher,
-                        FileUploader $fileUploader,
-                        DefaultAvatarService $defaultAvatarService): Response
+                        FileUploader                $fileUploader,
+                        AvatarService               $defaultAvatar): Response
     {
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
@@ -51,7 +51,7 @@ final class UserController extends AbstractController
             $user->setActive(true);
             $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
             $this->handleFileUploads($user, $form, $fileUploader);
-            $defaultAvatarService->randDefaultPhoto($user);
+            $defaultAvatar->randUserPhoto($user);
 
             $entityManager->persist($user);
             $entityManager->flush();
@@ -97,7 +97,6 @@ final class UserController extends AbstractController
                     $security->login($user);
                     $hashedPassword = $passwordHasher->hashPassword($user, $checkPassword);
                     $user->setPassword($hashedPassword);
-
                 }
 
                 $this->handleFileUploads($user, $form, $fileUploader);

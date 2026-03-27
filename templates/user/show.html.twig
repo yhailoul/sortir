@@ -10,7 +10,7 @@
         <img src="{{ asset('uploads/' ~ user.photo) }}" alt="{{ user.username }} profile photo"
         style="width: 200px; height: 200px;">
     {% else %}
-        <img src="{{ asset('uploads/imageProfilDefault.jpg' ) }}" alt="{{ user.username }} profile photo"
+        <img src="{{ asset('defaulsPhotosProfile' ~ user.photo ) }}" alt="{{ user.username }} profile photo"
              style="width: 200px; height: 200px;">
     {% endif %}
     {# je dois me rappeler de mettre la photo #}

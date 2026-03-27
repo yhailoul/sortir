@@ -4,7 +4,7 @@ namespace App\Service;
 
 use App\Entity\User;
 
-class DefaultAvatarService
+class AvatarService
 {
     private array $defaultPhotos = [
         'blue_soft_abstract.png',
@@ -27,10 +27,11 @@ class DefaultAvatarService
         'gray_modern_abstract.png',
     ];
 
-    public function randDefaultPhoto(User $user): void
+    public function randUserPhoto(User $user): void
     {
         if (!$user->getPhoto()) {
             $user->setPhoto($this->defaultPhotos[array_rand($this->defaultPhotos)]);
         }
     }
+
 }
