@@ -10,8 +10,9 @@
             <tr>
                 <th>Id</th>
                 <th>Email</th>
+                <th>Username</th>
                 <th>Roles</th>
-                <th>Password</th>
+                <th>Activity Status</th>
                 <th>actions</th>
             </tr>
         </thead>
@@ -20,11 +21,18 @@
             <tr>
                 <td>{{ user.id }}</td>
                 <td>{{ user.email }}</td>
+                <td>{{ user.username }}</td>
                 <td>{{ user.roles ? user.roles|json_encode : '' }}</td>
-                <td>{{ user.password }}</td>
+                <td>{{ user.active}}</td>
                 <td>
                     <a href="{{ path('app_user_show', {'id': user.id}) }}">show</a>
-                    <a href="{{ path('app_user_edit', {'id': user.id}) }}">edit</a>
+                    {% if user.active == true and is_granted('ROLE_ADMIN') %}
+                        <a onclick="confirm('Do you really want to DEACTIVATE user: {{ user.username }} ?')" href="{{ path('app_user_deactivate_admin', {'id': user.id}) }}">Deactivate User</a>
+                    {% elseif user.active == false and is_granted('ROLE_ADMIN') %}
+                            <a onclick="confirm('Do you really want to ACTIVATE user: {{ user.username }} ?')" href="{{ path('app_user_activate_admin', {'id': user.id}) }}">Activate User</a>
+                    {% endif %}
+                    <a onclick="confirm('Do you really want to DELETE user: {{ user.username }} PERMANENTLY?')" href="{{ path('app_user_delete', { 'id':user.id }) }}">Delete User</a>
+
                 </td>
             </tr>
         {% else %}
@@ -34,6 +42,7 @@
         {% endfor %}
         </tbody>
     </table>
-
+    {% if is_granted('ROLE_ADMIN') and is_granted('ROLE_USER') %}
     <a href="{{ path('app_user_new') }}">Create new</a>
+    {% endif %}
 {% endblock %}
