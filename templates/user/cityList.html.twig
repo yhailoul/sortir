@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<h2>
+    Cities
+</h2>
+    <section>
+        {{ form_start(newCityForm) }}
+        {{ form_widget(newCityForm) }}
+        <button>Create new City</button>
+        <br>
+        {{ form_end(newCityForm) }}
+
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Zip code</th>
+                <th>Username</th>
+                <th>Roles</th>
+                <th>Activity Status</th>
+                <th>actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {%for city in cities %}
+                <tr>
+                    <td>{{ city.name }}</td>
+                    <td>{{ user.zipcode }}</td>
+                </tr>
+        {% endfor %}
+            </tbody>
+            </table>
+    </section>
+
+
+{% endblock %}
+
+{% block title %}
+City
+{% endblock %}
+
