@@ -72,13 +72,13 @@ class AppFixtures extends Fixture
         //$faker = Factory::create('fr_FR');
         $statusList = [];
         $statuses = [
-            'En création',
-            'Ouverte',
-            'Clôturée',
-            'En cours',
-            'Terminée',
-            'Annulée',
-            'Historisée'
+            'In creation',
+            'Open',
+            'Closed',
+            'In progress',
+            'Ended',
+            'Canceled',
+            'Historized'
         ];
         foreach ($statuses as $statusName) {
             $status = new Status();
