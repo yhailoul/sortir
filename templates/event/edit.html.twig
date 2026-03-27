@@ -1,10 +1,61 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-
-    {% embed 'views/form/template-form.html.twig' with {form : eventFormEdit} %}
+    {% embed 'views/form/template-form.html.twig' with { form : eventFormEdit } %}
         {% block formTitle %} Event updating {% endblock %}
-        {% block buttonLabel %} Update {%  endblock %}
-    {% endembed%}
+        {% block buttonLabel %} Update {% endblock %}
+    {% endembed %}
 {% endblock %}
 
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dateStart = document.getElementById('event_dateStartHour');
+            const dateEnd = document.getElementById('event_dateEndHour');
+            const deadline = document.getElementById('event_registrationDeadline');
+            const form = dateStart?.closest('form');
+
+            function validate() {
+                const start = dateStart?.value ? new Date(dateStart.value) : null;
+                const end = dateEnd?.value ? new Date(dateEnd.value) : null;
+                const dead = deadline?.value ? new Date(deadline.value) : null;
+
+                // Mettre à jour les contraintes min/max
+                if (dateEnd) dateEnd.min = dateStart?.value || '';
+                if (deadline) deadline.max = dateStart?.value || '';
+                if (dateStart) dateStart.max = dateEnd?.value || '';
+
+                // Valider dateEnd > dateStart
+                if (start && end && end <= start) {
+                    dateEnd.setCustomValidity("La date de fin doit être postérieure à la date de début.");
+                    dateStart.setCustomValidity("La date de début doit être antérieure à la date de fin.");
+                } else {
+                    dateEnd.setCustomValidity('');
+                    dateStart.setCustomValidity('');
+                }
+
+                // Valider deadline <= dateStart
+                if (start && dead && dead > start) {
+                    deadline.setCustomValidity("La date limite d'inscription doit être antérieure ou égale à la date de début.");
+                } else {
+                    deadline.setCustomValidity('');
+                }
+            }
+
+            validate();
+
+            dateStart?.addEventListener('change', validate);
+            dateEnd?.addEventListener('change', validate);
+            deadline?.addEventListener('change', validate);
+
+            form?.addEventListener('submit', function (e) {
+                validate();
+                if (!form.checkValidity()) {
+                    e.preventDefault();
+                    dateEnd?.reportValidity() || deadline?.reportValidity() || dateStart?.reportValidity();
+                }
+            });
+        });
+    </script>
+{% endblock %}

@@ -108,6 +108,11 @@ class EventController extends AbstractController
 
         $eventForm = $this->createForm(EventType::class, $event);
         $eventForm->handleRequest($request);
+
+        if ($eventForm->isSubmitted() && !$eventForm->isValid()){
+            $this->addFlash('error', 'Some fields are invalid');
+        }
+
         if ($eventForm->isSubmitted() && $eventForm->isValid()){
             $duration = $event->getDateStartHour()->diff($event->getDateEndHour());
             $event->setDuration($duration);

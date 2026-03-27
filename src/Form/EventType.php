@@ -14,6 +14,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use function Sodium\add;
 
 class EventType extends AbstractType
 {
@@ -29,12 +30,10 @@ class EventType extends AbstractType
                 'label' => "Date et heure de DEBUT de l'évènement :",
                 'widget' => 'single_text'
             ])
-
             ->add('dateEndHour', DateTimeType::class, [
                 'label' => "Date et heure de FIN de l'évènement :",
                 'widget' => 'single_text'
             ])
-
             ->add('registrationDeadline', DateTimeType::class, [
                 'label' => "Date limite d'inscription :",
                 'widget' => 'single_text'
@@ -49,15 +48,17 @@ class EventType extends AbstractType
                     'placeholder' => "Description de l'activité :"
                 ]
             ])
-
             ->add('eventLocation', EntityType::class, [
-            'class' => Location::class,
-                    'choice_label' => "name",
+                'class' => Location::class,
+                'choice_label' => "name",
             ])
-
             ->add('eventStatus', EntityType::class, [
-            'class' => Status::class,
-                    'choice_label' => "label",
+                'class' => Status::class,
+                'choice_label' => "label",
+            ])
+            ->add('events', EntityType::class, [
+                'class' => Status::class,
+                'choice_label' => "label",
             ]);
     }
 

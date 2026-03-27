@@ -7,7 +7,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
+#[Assert\Callback('validateDates')]
 #[ORM\Entity(repositoryClass: EventRepository::class)]
 class Event
 {
@@ -227,5 +230,30 @@ class Event
         $this->campus = $campus;
 
         return $this;
+    }
+
+    public function validateDates(ExecutionContextInterface $context): void
+    {
+        if ($this->getDateStartHour() && $this->getDateEndHour()) {
+            if ($this->getDateEndHour() <= $this->getDateStartHour()) {
+                $context->buildViolation('The end date must be later than the start date.')
+                    ->atPath('dateEndHour')
+                    ->addViolation();
+            }
+        }
+
+        if ($this->getRegistrationDeadline() && $this->getDateStartHour()) {
+            if ($this->getRegistrationDeadline() >= $this->getDateStartHour()) {
+                $context->buildViolation('The registration deadline must be before the start date.')
+                    ->atPath('registrationDeadline')
+                    ->addViolation();
+            }
+        }
+
+        if ($this->getDateStartHour() && $this->getDateStartHour() < new \DateTime()) {
+            $context->buildViolation('The start date cannot be in the past.')
+                ->atPath('dateStartHour')
+                ->addViolation();
+        }
     }
 }
