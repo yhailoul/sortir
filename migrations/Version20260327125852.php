@@ -1,0 +1,59 @@
+<?php
+
+declare(strict_types=1);
+
+namespace DoctrineMigrations;
+
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\Migrations\AbstractMigration;
+
+/**
+ * Auto-generated Migration: Please modify to your needs!
+ */
+final class Version20260327125852 extends AbstractMigration
+{
+    public function getDescription(): string
+    {
+        return '';
+    }
+
+    public function up(Schema $schema): void
+    {
+        // this up() migration is auto-generated, please modify it to your needs
+        $this->addSql('ALTER TABLE campus CHANGE name name VARCHAR(100) NOT NULL');
+        $this->addSql('ALTER TABLE city CHANGE name name VARCHAR(100) NOT NULL, CHANGE zip_code zip_code VARCHAR(20) NOT NULL');
+        $this->addSql('ALTER TABLE event ADD photo VARCHAR(255) DEFAULT NULL, CHANGE name name VARCHAR(100) NOT NULL');
+        $this->addSql('ALTER TABLE event ADD CONSTRAINT FK_3BAE0AA7876C4DDA FOREIGN KEY (organizer_id) REFERENCES `user` (id)');
+        $this->addSql('ALTER TABLE event ADD CONSTRAINT FK_3BAE0AA7ADC4F20E FOREIGN KEY (event_location_id) REFERENCES location (id)');
+        $this->addSql('ALTER TABLE event ADD CONSTRAINT FK_3BAE0AA7ED623E80 FOREIGN KEY (event_status_id) REFERENCES status (id)');
+        $this->addSql('ALTER TABLE event ADD CONSTRAINT FK_3BAE0AA7AF5D55E1 FOREIGN KEY (campus_id) REFERENCES campus (id)');
+        $this->addSql('ALTER TABLE location CHANGE name name VARCHAR(100) NOT NULL, CHANGE city_id city_id INT NOT NULL');
+        $this->addSql('ALTER TABLE location ADD CONSTRAINT FK_5E9E89CB8BAC62AF FOREIGN KEY (city_id) REFERENCES city (id)');
+        $this->addSql('ALTER TABLE reset_password_request ADD CONSTRAINT FK_7CE748AA76ED395 FOREIGN KEY (user_id) REFERENCES `user` (id)');
+        $this->addSql('ALTER TABLE status CHANGE label label VARCHAR(30) NOT NULL');
+        $this->addSql('ALTER TABLE user CHANGE firstname firstname VARCHAR(50) DEFAULT NULL, CHANGE lastname lastname VARCHAR(50) DEFAULT NULL, CHANGE phone phone VARCHAR(30) DEFAULT NULL, CHANGE username username VARCHAR(180) NOT NULL');
+        $this->addSql('ALTER TABLE user ADD CONSTRAINT FK_8D93D649AF5D55E1 FOREIGN KEY (campus_id) REFERENCES campus (id)');
+        $this->addSql('ALTER TABLE user_event ADD CONSTRAINT FK_D96CF1FFA76ED395 FOREIGN KEY (user_id) REFERENCES `user` (id) ON DELETE CASCADE');
+        $this->addSql('ALTER TABLE user_event ADD CONSTRAINT FK_D96CF1FF71F7E88B FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE');
+    }
+
+    public function down(Schema $schema): void
+    {
+        // this down() migration is auto-generated, please modify it to your needs
+        $this->addSql('ALTER TABLE campus CHANGE name name VARCHAR(255) NOT NULL');
+        $this->addSql('ALTER TABLE city CHANGE name name VARCHAR(255) NOT NULL, CHANGE zip_code zip_code VARCHAR(255) NOT NULL');
+        $this->addSql('ALTER TABLE event DROP FOREIGN KEY FK_3BAE0AA7876C4DDA');
+        $this->addSql('ALTER TABLE event DROP FOREIGN KEY FK_3BAE0AA7ADC4F20E');
+        $this->addSql('ALTER TABLE event DROP FOREIGN KEY FK_3BAE0AA7ED623E80');
+        $this->addSql('ALTER TABLE event DROP FOREIGN KEY FK_3BAE0AA7AF5D55E1');
+        $this->addSql('ALTER TABLE event DROP photo, CHANGE name name VARCHAR(255) NOT NULL');
+        $this->addSql('ALTER TABLE location DROP FOREIGN KEY FK_5E9E89CB8BAC62AF');
+        $this->addSql('ALTER TABLE location CHANGE name name VARCHAR(255) NOT NULL, CHANGE city_id city_id INT DEFAULT NULL');
+        $this->addSql('ALTER TABLE reset_password_request DROP FOREIGN KEY FK_7CE748AA76ED395');
+        $this->addSql('ALTER TABLE status CHANGE label label VARCHAR(255) NOT NULL');
+        $this->addSql('ALTER TABLE `user` DROP FOREIGN KEY FK_8D93D649AF5D55E1');
+        $this->addSql('ALTER TABLE `user` CHANGE firstname firstname VARCHAR(255) DEFAULT NULL, CHANGE lastname lastname VARCHAR(255) DEFAULT NULL, CHANGE phone phone VARCHAR(255) DEFAULT NULL, CHANGE username username VARCHAR(180) DEFAULT NULL');
+        $this->addSql('ALTER TABLE user_event DROP FOREIGN KEY FK_D96CF1FFA76ED395');
+        $this->addSql('ALTER TABLE user_event DROP FOREIGN KEY FK_D96CF1FF71F7E88B');
+    }
+}
