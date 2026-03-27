@@ -40,7 +40,7 @@ class AppFixtures extends Fixture
 
         $users = $this->user($manager, $campusList);
 
-        $this->event($manager, $users, $statusList, $locationList);
+        $this->event($manager, $users, $statusList, $locationList, $campusList );
 
         $manager->flush();
     }
@@ -146,7 +146,7 @@ class AppFixtures extends Fixture
                 ->setLastname($faker->lastName())
                 ->setPhone($faker->phoneNumber())
                 ->setActive(true)
-                ->setCampus($campusList[0]);
+                ->setCampus($faker->randomElement($campusList));
 
             $users[] = $user;
             $manager->persist($user);
@@ -154,7 +154,7 @@ class AppFixtures extends Fixture
         return $users;
     }
 
-    public function event(ObjectManager $manager, array $users, array $statusList, array $locationList): array
+    public function event(ObjectManager $manager, array $users, array $statusList, array $locationList, array $campusList): array
     {
         $faker = Factory::create('fr_FR');
         $events = [];
@@ -177,6 +177,7 @@ class AppFixtures extends Fixture
             $event = new Event();
             $organizer = $faker->randomElement($users);
             $randomLocation = $faker->randomElement($locationList);
+            $randomCampus = $faker->randomElement($campusList);
             $event
                 ->setName($faker->sentence())
                 ->setinfosEvent($faker->paragraph())
@@ -188,7 +189,7 @@ class AppFixtures extends Fixture
                 ->setOrganizer($organizer)
                 ->setEventStatus($faker->randomElement($statusList))
                 ->setEventLocation($randomLocation)
-                ->setCampus($organizer->getCampus());
+                ->setCampus($randomCampus);
             $maxParticipants = min($event->getnbMaxRegistrations(), count($users) - 1);
             $nbParticipants = $faker->numberBetween(0, $maxParticipants);
             $shuffledUsers = $users;

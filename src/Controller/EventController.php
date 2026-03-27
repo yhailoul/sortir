@@ -23,6 +23,7 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('events', name: 'events_')]
 class EventController extends AbstractController
 {
+
     #[Route('/list', name: 'listFilters', methods: ['GET','POST'])]
     public function listFilters(Request $request,
                                 EventRepository $eventRepository,
@@ -42,27 +43,16 @@ class EventController extends AbstractController
         $filterForm->handleRequest($request);
         $formData = $filterForm->getData();
 
-//         if($request->query->has('campus')){
-//             $campusId = $request->query->get('campus');
-//             if($campusId){
-//                 $campus=$campusRepository->find($campusId);
-//                 $eventSearch->setCampus($campus);
-//             }
-//         }
-         if ($filterForm->isSubmitted() ) {
-             $campus= $eventSearch->getCampus();
-             $events = $eventRepository->filterBySelection($user, $eventSearch, $campus );
-//             dump('données du formulaire '.$formData);
-//             $startDate = $eventSearch->getStartDate();
-//             dump('campus dans eventSearch ' . ($startDate ? $startDate->format('Y-m-d H:i:s') : 'null'));
-//
-//             dd($events);
+        if ($filterForm->isSubmitted() ) {
+            $campus= $eventSearch->getCampus();
+            $events = $eventRepository->filterBySelection($user, $eventSearch, $campus );
+
         }
         return $this->render('event/list.html.twig', [
             'events' => $events,
             'eventList' => $eventList,
             'filterForm' => $filterForm,
-            'user' => $user,
+            'user' => $user
         ]);
 
     }

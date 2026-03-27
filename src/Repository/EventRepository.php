@@ -22,41 +22,43 @@ class EventRepository extends ServiceEntityRepository
         parent::__construct($registry, Event::class);
     }
 
-    public function filterBySelection(User $user, FilterSearch $filter, ?Campus $campus){
-
+    public function filterBySelection(User $user, FilterSearch $filter, ?Campus $campus)
+    {
         $qb = $this->createQueryBuilder('e');
 
-        dump('SQL REçU: '.$qb->getDQL());
-        dump('paramètres : '.$qb->getParameters());
 
-        if($campus !== null){
-            if($campus->getId()){
-                $qb->andWhere('e.campus = :campus')
-                    ->setParameter('campus', $campus);
-            }
+        if ($campus !== null && $campus->getId()) {
+            $qb->andWhere('e.campus = :campus')
+                ->setParameter('campus', $campus);
+            dump('Filtre campus appliqué avec ID: ' . $campus->getId());
         }
-        if($filter->getSearchTerm()){
+
+        if ($filter->getSearchTerm()) {
             $qb->andWhere('e.name LIKE :searchTerm')
-                ->setParameter('searchTerm', '%'.$filter->getSearchTerm().'%');
+                ->setParameter('searchTerm', '%' . $filter->getSearchTerm() . '%');
         }
-        if($filter->getStartDate()){
+
+        if ($filter->getStartDate()) {
             $start = clone $filter->getStartDate();
-            $start->setTime(0, 0, 0); // Début de journée
+            $start->setTime(0, 0, 0);
             $end = clone $filter->getStartDate();
-            $end->setTime(23, 59, 59); // Fin de journée
+            $end->setTime(23, 59, 59);
 
             $qb->andWhere('e.dateStartHour BETWEEN :startDate AND :endDate')
                 ->setParameter('startDate', $start)
                 ->setParameter('endDate', $end);
         }
-        if($filter->getEndDate()){
+
+        if ($filter->getEndDate()) {
             $end = clone $filter->getEndDate();
-            $end->setTime(23, 59, 59); // Fin de journée : 23:59:59
+            $end->setTime(23, 59, 59);
 
             $qb->andWhere('e.dateEndHour <= :endDate')
                 ->setParameter('endDate', $end);
         }
-        $orConditions =[];
+
+
+//        $orConditions = [];
 
         if($filter->getOrganized()){
             $qb->orWhere('e.organizer = :organizer')
@@ -73,17 +75,19 @@ class EventRepository extends ServiceEntityRepository
                 ->setParameter('now', new DateTime('now'));
 
         }
-        if(!empty($orConditions)){
+
+        if (!empty($orConditions)) {
             $qb->andWhere($qb->expr()->orX()->addMultiple($orConditions));
         }
 
         $qb->orderBy('e.dateStartHour', 'ASC');
         $query = $qb->getQuery();
-        (dump($query->getSQL()));
+        dump($query->getSQL());
         dump($query->getParameters());
-        return $qb->getQuery()->getResult();
 
 
+        return $qb->getQuery()
+            ->getResult();
 
     }
 
