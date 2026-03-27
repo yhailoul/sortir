@@ -25,10 +25,10 @@ use Symfony\Component\Routing\Attribute\Route;
 class EventController extends AbstractController
 {
 
-    #[Route('/list', name: 'listFilters', methods: ['GET','POST'])]
-    public function listFilters(Request $request,
-                                EventRepository $eventRepository,
-                                Security $security, StatusManager $statusManager, EntityManagerInterface $entityManager,
+    #[Route('/list', name: 'listFilters', methods: ['GET', 'POST'])]
+    public function listFilters(Request          $request,
+                                EventRepository  $eventRepository,
+                                Security         $security, StatusManager $statusManager, EntityManagerInterface $entityManager,
                                 CampusRepository $campusRepository): Response
     {
         $events = [];
@@ -49,9 +49,9 @@ class EventController extends AbstractController
         $filterForm->handleRequest($request);
         $formData = $filterForm->getData();
 
-        if ($filterForm->isSubmitted() ) {
-            $campus= $eventSearch->getCampus();
-            $events = $eventRepository->filterBySelection($user, $eventSearch, $campus );
+        if ($filterForm->isSubmitted()) {
+            $campus = $eventSearch->getCampus();
+            $events = $eventRepository->filterBySelection($user, $eventSearch, $campus);
 
         }
         return $this->render('event/list.html.twig', [
@@ -110,7 +110,7 @@ class EventController extends AbstractController
     }
 
 
-    #[ROUTE('/edit/{id}', name: 'edit', requirements: ['id' => '\d+'])]
+    #[Route('/edit/{id}', name: 'edit', requirements: ['id' => '\d+'])]
     public function editEvent(
         int                    $id,
         EventRepository        $eventRepository,
@@ -119,7 +119,13 @@ class EventController extends AbstractController
         FileUploader           $fileUploader
     ): Response
     {
+
         $event = $eventRepository->find($id);
+
+        if (!$this->isGranted('EVENT_EDIT', $event)) {
+            $this->addFlash('danger', 'You do not have permission to modify this event.');
+            return $this->redirectToRoute('events_listFilters');
+        }
 
         $eventForm = $this->createForm(EventType::class, $event);
         $eventForm->handleRequest($request);
