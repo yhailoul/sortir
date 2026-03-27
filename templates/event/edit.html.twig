@@ -16,15 +16,26 @@
             const deadline = document.getElementById('event_registrationDeadline');
             const form = dateStart?.closest('form');
 
+            // Obtenir la date/heure actuelle au format datetime-local
+            function getNow() {
+                const now = new Date();
+                // Arrondir à la minute courante
+                now.setSeconds(0, 0);
+                return now.toISOString().slice(0, 16); // "YYYY-MM-DDTHH:MM"
+            }
+
             function validate() {
+                const now = getNow();
                 const start = dateStart?.value ? new Date(dateStart.value) : null;
                 const end = dateEnd?.value ? new Date(dateEnd.value) : null;
                 const dead = deadline?.value ? new Date(deadline.value) : null;
 
                 // Mettre à jour les contraintes min/max
-                if (dateEnd) dateEnd.min = dateStart?.value || '';
-                if (deadline) deadline.max = dateStart?.value || '';
+                if (dateStart) dateStart.min = now;
+                if (deadline) deadline.min = now;
                 if (dateStart) dateStart.max = dateEnd?.value || '';
+                if (deadline) deadline.max = dateStart?.value || '';
+                if (dateEnd) dateEnd.min = dateStart?.value || now;
 
                 // Valider dateEnd > dateStart
                 if (start && end && end <= start) {
@@ -40,6 +51,11 @@
                     deadline.setCustomValidity("La date limite d'inscription doit être antérieure ou égale à la date de début.");
                 } else {
                     deadline.setCustomValidity('');
+                }
+
+                // Valider que dateStart n'est pas dans le passé
+                if (start && start < new Date()) {
+                    dateStart.setCustomValidity("La date de début ne peut pas être dans le passé.");
                 }
             }
 

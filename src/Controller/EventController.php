@@ -3,11 +3,18 @@
 namespace App\Controller;
 
 use App\Entity\Event;
+use App\Entity\User;
 use App\Form\EventType;
+use App\Form\FilterSearchType;
+use App\Form\ListSortingType;
+use App\Form\Model\FilterSearch;
 use App\Repository\EventRepository;
+use App\Repository\UserRepository;
 use App\Utils\FileUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,29 +23,30 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('events', name: 'events_')]
 class EventController extends AbstractController
 {
-    #[Route('/{page}', name: 'list', requirements: ['page' => '\d+'])]
-    public function list(
-        EventRepository $eventRepository,
-        int $page = 1): Response
-    {
-        $nbEvents = $eventRepository->count();
-        $maxPages = max(1, ceil($nbEvents / 20));
-
-        if ($page > $maxPages) {
-            throw $this->createNotFoundException("The page $page does not exist.");
+    #[Route('/list', name: 'list', methods: ['GET','POST'])]
+    public function list(Request $request, EventRepository $eventRepository, Security $security): Response
+    {   $events=[];
+        $eventList = $eventRepository->findAll();
+        $user = $security->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('utilisateur inexistant');
         }
+        $eventSearch = new FilterSearch();
+        $filterForm = $this->createForm(FilterSearchType::class, $eventSearch);
+        $filterForm->handleRequest($request);
 
-        if ($page < 1) {
-            return $this->redirectToRoute('events_list', ['page' => 1]);
+         if ($filterForm->isSubmitted()) {
+
+           $events = $eventRepository->filterBySelection($user, $eventSearch);
+            //dd($events);
         }
-
-        $events = $eventRepository->findBy([], [], 20, ($page - 1) * 20);
-
         return $this->render('event/list.html.twig', [
             'events' => $events,
-            'currentPage' => $page,
-            'maxPages' => $maxPages,
+            'eventList' => $eventList,
+            'filterForm' => $filterForm,
+            'user' => $user,
         ]);
+
     }
 
     #[Route('/detail/{id}', name: 'detail', requirements: ['id' => '\d+'])]
@@ -66,34 +74,34 @@ class EventController extends AbstractController
 
         $eventForm->handleRequest($request);
 
-        if ($eventForm->isSubmitted() && $eventForm->isValid()){
-//            /**
-//             * @var UploadedFile $file
-//             */
-//            $file =$eventForm->get('backdrop')->getData();
-//            if($file){
-//                $event->setBackdrop(
-//                    $fileUploader->upload($file, 'assets/images/backdrops', $event->getName())
-//                );
-//            }
+        if ($eventForm->isSubmitted() && $eventForm->isValid()) {
+            $user = $this->getUser();
 
+            if (!$user instanceof User) {
+                throw $this->createAccessDeniedException('You must be logged in to edit an event.');
+            }
 
-            $duration = $event->getDateStartHour()->diff($event->getDateEndHour());
-            $event->setDuration($duration);
+            if (null === $user->getCampus()) {
+                $eventForm->addError(new FormError('Your account must be linked to a campus before editing an event.'));
+            } else {
+                $event->setOrganizer($user);
+                $event->setCampus($user->getCampus());
+                $event->setDuration($event->getDateStartHour()->diff($event->getDateEndHour()));
 
-            $entityManager->persist($event);
-            $entityManager->flush();
+                $entityManager->persist($event);
+                $entityManager->flush();
 
-            $this->addFlash('success', 'Event created!');
+                $this->addFlash('success', 'Event edited!');
 
-            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
-
+                return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+            }
         }
 
         return $this->render('event/create.html.twig', [
             'eventForm' => $eventForm->createView(),
         ]);
     }
+
 
     #[ROUTE('/edit/{id}', name: 'edit', requirements: ['id' => '\d+'])]
     public function editEvent(
@@ -146,6 +154,4 @@ class EventController extends AbstractController
         $this->addFlash('success', 'Event deleted!');
         return $this->redirectToRoute('events_list', ['page' => 1]);
     }
-
-
 }

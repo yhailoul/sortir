@@ -1,37 +1,37 @@
 {% extends 'base.html.twig' %}
+{% block title %}
+    event List
+{% endblock %}
 
 {% block body %}
-    <h2>List of Events</h2>
 
-    <div>
-        {% if currentPage > 1 %}
-            <a href="{{ path('events_list', {'page': currentPage - 1}) }}">Previous page</a>
-        {% endif %}
+    <div class="content">
+        <h2>event List</h2>
+        <div class="searchBar">
+            {{form_start(filterForm) }}
+            {{ form_widget(filterForm) }}
+            <button>Search</button>
+            {{ form_end(filterForm) }}
+        </div>
+        <section>
 
-        {% if currentPage < maxPages %}
-            <a href="{{ path('events_list', {'page': currentPage + 1}) }}">Next page</a>
-        {% endif %}
+            <p>événements choisis</p>
+                {% for ev in events %}
+                    <article>
+                        <p>{{ loop.index }} : {{ ev.name }}</p>
+                    </article>
+                {% endfor %}
+            <br>
+               <p>tous les événements </p>
+                    {% for event in eventList %}
+                    <article>
+                        <p>{{ loop.index }} : {{ event.name }}</p>
+                   </article>
+                    {% endfor %}
+
+        </section>
     </div>
 
-    <section>
-        {% for event in events %}
-            <article>
-                <h3>
-                    <a href="{{ path('events_detail', {'id': event.id }) }}">
-                        {{ event.name }}
-                    </a>
-                </h3>
-
-                {% if event.dateStartHour %}
-                    <p>Start: {{ event.dateStartHour|date('d/m/Y H:i') }}</p>
-                {% endif %}
-
-                {% if event.dateEndHour %}
-                    <p>End: {{ event.dateEndHour|date('d/m/Y H:i') }}</p>
-                {% endif %}
-            </article>
-        {% else %}
-            <p>No events found.</p>
-        {% endfor %}
-    </section>
 {% endblock %}
+
+

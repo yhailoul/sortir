@@ -36,14 +36,16 @@ class Location
     /**
      * @var Collection<int, City>
      */
-    #[ORM\OneToMany(targetEntity: City::class, mappedBy: 'locationsList')]
-    private Collection $city;
+    #[ORM\ManyToOne(inversedBy: 'locationsList')]
+    private City $city;
+
 
     public function __construct()
     {
         $this->events = new ArrayCollection();
-        $this->city = new ArrayCollection();
+
     }
+
 
     public function getId(): ?int
     {
@@ -131,6 +133,7 @@ class Location
     /**
      * @return Collection<int, City>
      */
+
     public function getCity(): Collection
     {
         return $this->city;
@@ -138,23 +141,14 @@ class Location
 
     public function addCity(City $city): static
     {
-        if (!$this->city->contains($city)) {
-            $this->city->add($city);
-            $city->setLocationsList($this);
-        }
-
+        $this->city= $city;
         return $this;
     }
 
-    public function removeCity(City $city): static
-    {
-        if ($this->city->removeElement($city)) {
-            // set the owning side to null (unless already changed)
-            if ($city->getLocationsList() === $this) {
-                $city->setLocationsList(null);
-            }
-        }
+//    public function removeCity(City $city): static
+//    {
+//        $this->city= null;
+//                return $this;
+//    }
 
-        return $this;
-    }
 }

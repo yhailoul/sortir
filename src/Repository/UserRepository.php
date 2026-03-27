@@ -43,6 +43,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->getOneOrNullResult();
     }
 
+
+
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */
