@@ -2,7 +2,6 @@
 
 namespace App\Form;
 
-use App\Entity\Campus;
 use App\Entity\Event;
 use App\Entity\Location;
 use App\Entity\Status;
@@ -17,6 +16,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Image;
+use function Sodium\add;
 
 class EventType extends AbstractType
 {
@@ -59,7 +59,7 @@ class EventType extends AbstractType
                 'choice_label' => "label",
             ])
             ->add('eventPhoto', FileType::class, [
-                'label' => 'Profile Picture',
+                'label' => 'Event Picture',
                 'mapped' => false,
                 'required' => false,
                 'constraints' => [
@@ -70,10 +70,6 @@ class EventType extends AbstractType
                     ], maxSizeMessage: 'Maximum file size allowed is 1MB', mimeTypesMessage: 'Only JPG, PNG, webp files are allowed')
                 ]
 
-            ])
-            ->add('campus', EntityType::class, [
-                'class' => Campus::class,
-                'choice_label' => "name",
             ]);
     }
 
