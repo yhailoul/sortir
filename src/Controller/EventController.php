@@ -17,9 +17,12 @@ use App\Service\StatusManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+
+
 
 #[Route('events', name: 'events_')]
 class EventController extends AbstractController
@@ -60,7 +63,6 @@ class EventController extends AbstractController
             'filterForm' => $filterForm,
             'user' => $user
         ]);
-
     }
 
     #[Route('/detail/{id}', name: 'detail', requirements: ['id' => '\d+'])]
@@ -68,7 +70,7 @@ class EventController extends AbstractController
     {
         $event = $eventRepository->find($id);
         if (!$event) {
-            throw $this->createNotFoundException('Pas de event avec ce id ' . $id);
+            throw $this->createNotFoundException('Not event with the id ' . $id);
         }
 
 
@@ -80,8 +82,8 @@ class EventController extends AbstractController
     #[Route('/create', name: 'create', methods: ['POST', 'GET'])]
     public function createEvent(
         EntityManagerInterface $entityManager,
-        Request                $request,
-        FileUploader           $fileUploader
+        Request $request,
+        FileUploader $fileUploader
     ): Response
     {
         $event = new Event();
@@ -91,17 +93,28 @@ class EventController extends AbstractController
         $user = $this->getUser();
 
         if ($eventForm->isSubmitted() && $eventForm->isValid()) {
-            $this->handleFileUploads($event, $eventForm, $fileUploader);
-            $duration = $event->getDateStartHour()->diff($event->getDateEndHour());
-            $event->setDuration($duration);
-            $event->addParticipantList($user);
+            $user = $this->getUser();
 
-            $entityManager->persist($event);
-            $entityManager->flush();
+            if (!$user instanceof User) {
+                throw $this->createAccessDeniedException('You must be logged in to edit an event.');
+            }
+
+            if (null === $user->getCampus()) {
+                $eventForm->addError(new FormError('Your account must be linked to a campus before editing an event.'));
+            } else {
+                $event->setOrganizer($user);
+                $event->setCampus($user->getCampus());
+                $this->handleFileUploads($event, $eventForm, $fileUploader);
+                $event->setDuration($event->getDateStartHour()->diff($event->getDateEndHour()));
+                $event->addParticipantList($user);
+
+                $entityManager->persist($event);
+                $entityManager->flush();
 
             $this->addFlash('success', 'Event created!');
 
             return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+            }
         }
 
         return $this->render('event/create.html.twig', [
@@ -109,20 +122,20 @@ class EventController extends AbstractController
         ]);
     }
 
-
     #[ROUTE('/edit/{id}', name: 'edit', requirements: ['id' => '\d+'])]
     public function editEvent(
-        int                    $id,
-        EventRepository        $eventRepository,
+        int $id,
+        EventRepository $eventRepository,
         EntityManagerInterface $entityManager,
-        Request                $request,
-        FileUploader           $fileUploader
+        Request $request,
+        FileUploader $fileUploader
     ): Response
     {
         $event = $eventRepository->find($id);
 
         $eventForm = $this->createForm(EventType::class, $event);
         $eventForm->handleRequest($request);
+
         if ($eventForm->isSubmitted() && $eventForm->isValid()) {
             $this->handleFileUploads($event, $eventForm, $fileUploader);
             $duration = $event->getDateStartHour()->diff($event->getDateEndHour());

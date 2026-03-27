@@ -10,6 +10,7 @@ use App\Form\Model\FilterSearch;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use function Symfony\Component\Clock\now;
 
 /**
  * @extends ServiceEntityRepository<Event>
