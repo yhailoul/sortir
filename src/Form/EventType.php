@@ -9,11 +9,13 @@ use Doctrine\ORM\Mapping\Entity;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Image;
 use function Sodium\add;
 
 class EventType extends AbstractType
@@ -55,6 +57,19 @@ class EventType extends AbstractType
             ->add('eventStatus', EntityType::class, [
                 'class' => Status::class,
                 'choice_label' => "label",
+            ])
+            ->add('eventPhoto', FileType::class, [
+                'label' => 'Event Picture',
+                'mapped' => false,
+                'required' => false,
+                'constraints' => [
+                    new Image(maxSize: '1M', mimeTypes: [
+                        'image/jpeg',
+                        'image/png',
+                        'image/webp'
+                    ], maxSizeMessage: 'Maximum file size allowed is 1MB', mimeTypesMessage: 'Only JPG, PNG, webp files are allowed')
+                ]
+
             ]);
     }
 
