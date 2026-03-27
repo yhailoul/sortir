@@ -11,6 +11,7 @@ use App\Form\FilterSearchType;
 use App\Form\Model\FilterSearch;
 use App\Repository\CampusRepository;
 use App\Repository\EventRepository;
+use App\Service\EventManager;
 use App\Service\EventRegistrationManager;
 use App\Service\FileUploader;
 use App\Service\StatusManager;
@@ -21,6 +22,7 @@ use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('events', name: 'events_')]
 class EventController extends AbstractController
@@ -79,41 +81,24 @@ class EventController extends AbstractController
     }
 
     #[Route('/create', name: 'create', methods: ['POST', 'GET'])]
+    #[IsGranted("ROLE_USER")]
     public function createEvent(
-        EntityManagerInterface $entityManager,
-        Request $request,
-        FileUploader $fileUploader
+        Request      $request,
+        EventManager $eventManager
     ): Response
     {
         $event = new Event();
         $eventForm = $this->createForm(EventType::class, $event);
 
         $eventForm->handleRequest($request);
-        $user = $this->getUser();
 
         if ($eventForm->isSubmitted() && $eventForm->isValid()) {
-            $user = $this->getUser();
+            $imageFile = $eventForm->get('eventPhoto')->getData();
+            $eventManager->createEvent($event, $this->getUser(), $imageFile);
 
-            if (!$user instanceof User) {
-                throw $this->createAccessDeniedException('You must be logged in to edit an event.');
-            }
+            $this->addFlash('success', 'Event created!');
 
-            if (null === $user->getCampus()) {
-                $eventForm->addError(new FormError('Your account must be linked to a campus before editing an event.'));
-            } else {
-                $event->setOrganizer($user);
-                $event->setCampus($user->getCampus());
-                $this->handleFileUploads($event, $eventForm, $fileUploader);
-                $event->setDuration($event->getDateStartHour()->diff($event->getDateEndHour()));
-                $event->addParticipantList($user);
-
-                $entityManager->persist($event);
-                $entityManager->flush();
-
-                $this->addFlash('success', 'Event created!');
-
-                return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
-            }
+            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
         }
 
         return $this->render('event/create.html.twig', [
@@ -210,23 +195,5 @@ class EventController extends AbstractController
 
         }
         return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
-    }
-
-    private function handleFileUploads(Event $event, $form, FileUploader $fileUploader): void
-    {
-
-        $imageFile = $form->get('eventPhoto')->getData();
-
-        if ($imageFile) {
-            $oldPhoto = $event->getPhoto();
-            $event->setPhoto($fileUploader->upload($imageFile));
-
-            if ($oldPhoto) {
-                //Récupère le chemin complet de l'ancienne image
-                $fullPath = $fileUploader->getTargetDirectory() . '/' . $oldPhoto;
-                //La supprime
-                unlink($fullPath);
-            }
-        }
     }
 }
