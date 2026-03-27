@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\UserType;
 use App\Repository\UserRepository;
+use App\Service\DefaultAvatarService;
 use App\Service\FileUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -33,7 +34,8 @@ final class UserController extends AbstractController
     public function new(Request $request,
                         EntityManagerInterface $entityManager,
                         UserPasswordHasherInterface $userPasswordHasher,
-                        FileUploader $fileUploader): Response
+                        FileUploader $fileUploader,
+                        DefaultAvatarService $defaultAvatarService): Response
     {
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
@@ -49,31 +51,7 @@ final class UserController extends AbstractController
             $user->setActive(true);
             $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
             $this->handleFileUploads($user, $form, $fileUploader);
-
-            if (!$user->getPhoto()) {
-                $defaultPhotos = [
-                    'blue_soft_abstract.png',
-                    'blue_deep_abstract.png',
-                    'cyan_mist_abstract.png',
-                    'teal_soft_abstract.png',
-                    'green_fresh_abstract.png',
-                    'green_deep_abstract.png',
-                    'lime_light_abstract.png',
-                    'yellow_warm_abstract.png',
-                    'amber_soft_abstract.png',
-                    'orange_pop_abstract.png',
-                    'red_soft_abstract.png',
-                    'rose_light_abstract.png',
-                    'pink_soft_abstract.png',
-                    'purple_mist_abstract.png',
-                    'violet_deep_abstract.png',
-                    'indigo_soft_abstract.png',
-                    'slate_clean_abstract.png',
-                    'gray_modern_abstract.png',
-                ];
-
-                $user->setPhoto($defaultPhotos[array_rand($defaultPhotos)]);
-            }
+            $defaultAvatarService->randDefaultPhoto($user);
 
             $entityManager->persist($user);
             $entityManager->flush();
