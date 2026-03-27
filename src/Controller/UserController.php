@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/user')]
 final class UserController extends AbstractController
@@ -24,22 +25,35 @@ final class UserController extends AbstractController
             'users' => $userRepository->findAll(),
         ]);
 
-
     }
 
     #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, FileUploader $fileUploader): Response
+    #[isGranted('ROLE_ADMIN')]
+
+    public function new(Request $request,
+                        EntityManagerInterface $entityManager,
+                        UserPasswordHasherInterface $userPasswordHasher,
+                        FileUploader $fileUploader): Response
     {
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $formDataPassword = $form->getData()->getPassword();
+            dump($form->getData());
+            //dd($formDataPassword);
+            $plainPassword = $form->get('password')->getData();
+            //dd($plainPassword);
+            $user->setRoles(['ROLE_USER']);
+            $user->setActive(true);
+            $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
             $this->handleFileUploads($user, $form, $fileUploader);
             $entityManager->persist($user);
             $entityManager->flush();
-
+            //dd($plainPassword);
             return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+
         }
 
         return $this->render('user/new.html.twig', [
@@ -57,39 +71,119 @@ final class UserController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_user_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, User $user, EntityManagerInterface $entityManager, FileUploader $fileUploader, UserPasswordHasherInterface $passwordHasher, Security $security): Response
+    public function edit(Request $request,
+                         Security $security,
+                         User $user,
+                         int $id,
+                         UserRepository $userRepository,
+                         EntityManagerInterface $entityManager,
+                         FileUploader $fileUploader,
+                         UserPasswordHasherInterface $passwordHasher): Response
     {
-        $form = $this->createForm(UserType::class, $user);
-        $form->handleRequest($request);
+        $user=$userRepository->find($id);
+        $authUser = $security->getUser();
+        if($user === $authUser){
+            $form = $this->createForm(UserType::class, $user);
+            $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $checkPassword = $form->get('password')->getData();
+            if ($form->isSubmitted() && $form->isValid()) {
+                $checkPassword = $form->get('password')->getData();
 
-            if (!empty($checkPassword)) {
-                $security->login($user);
-                $hashedPassword = $passwordHasher->hashPassword($user, $checkPassword);
-                $user->setPassword($hashedPassword);
+                if (!empty($checkPassword)) {
+                    $security->login($user);
+                    $hashedPassword = $passwordHasher->hashPassword($user, $checkPassword);
+                    $user->setPassword($hashedPassword);
 
+                }
+
+                $this->handleFileUploads($user, $form, $fileUploader);
+                $entityManager->flush();
+
+                return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
             }
-
-            $this->handleFileUploads($user, $form, $fileUploader);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+        }else{
+            throw $this->createAccessDeniedException('You are not allowed to edit this user.');
         }
-
         return $this->render('user/edit.html.twig', [
             'user' => $user,
             'form' => $form,
         ]);
     }
-
-    #[Route('/{id}', name: 'app_user_delete', methods: ['POST'])]
-    public function delete(Request $request, User $user, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}/activate/admin', name: 'app_user_activate_admin', methods: ['GET', 'POST'])]
+    #[isGranted('ROLE_ADMIN')]
+    public function Activate(Request $request,
+                                         Security $security,
+                                         User $user,
+                                         EntityManagerInterface $entityManager,
+                                         UserRepository $repository,
+                                         int $id): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->getPayload()->getString('_token'))) {
+        $user= $repository->find($id);
+        if(!$user){
+            throw $this->createNotFoundException("User not found");
+        }
+
+            if(!$user->isActive()){
+                $user->setActive(true);
+                $entityManager->persist($user);
+                $entityManager->flush();
+                $this->addFlash('success', 'You have activated user:'.$user->getUsername());
+            }else{
+                $this->addFlash('warning', 'This user is already active');
+            }
+
+
+        return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+    }
+    #[Route('/{id}/deactivate/admin', name: 'app_user_deactivate_admin', methods: ['GET', 'POST'])]
+    #[isGranted('ROLE_ADMIN')]
+    public function Deactivate(Request $request,
+                                         Security $security,
+                                         User $user,
+                                         EntityManagerInterface $entityManager,
+                                         UserRepository $repository,
+                                         int $id): Response
+    {
+        $user= $repository->find($id);
+        $authUser = $security->getUser();
+        if(!$user){
+            throw $this->createNotFoundException("User not found");
+        }
+        if($user === $authUser){
+            $this->addFlash('warning', 'You cannot deactivate your own account');
+            return $this->redirectToRoute('app_user_index');
+        }
+            if($user->isActive()){
+                $user->setActive(false);
+                $entityManager->persist($user);
+                $entityManager->flush();
+                $this->addFlash('success', 'You have deactivated user:'.$user->getUsername());
+            }else{
+                $this->addFlash('warning', 'This user is already deactivated');
+            }
+        return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+    }
+    #[Route('/delete/{id}', name: 'app_user_delete', methods: ['GET','POST'])]
+    #[isGranted('ROLE_ADMIN')]
+    public function delete(Request $request,
+                           User $user,
+                           int $id,
+                           UserRepository $repository,
+                           Security $security,
+                           EntityManagerInterface $entityManager): Response
+    {
+        $user= $repository->find($id);
+        $authUser = $security->getUser();
+        if(!$user){
+            throw $this->createNotFoundException("User not found");
+        }
+        if($user === $authUser){
+            $this->addFlash('warning', 'You cannot delete your own account');
+            return $this->redirectToRoute('app_user_index');
+        }else{
             $entityManager->remove($user);
             $entityManager->flush();
+            $this->addFlash('success', 'You have deleted user:'.$user->getUsername());
         }
 
         return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
