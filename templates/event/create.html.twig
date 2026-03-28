@@ -3,7 +3,11 @@
 {% block body %}
     {% embed 'views/form/template-form.html.twig' with { form : eventForm } %}
         {% block formTitle %} Create an event {% endblock %}
-        {% block buttonLabel %} Create {% endblock %}
+        {% block buttonLabel %}
+            {{ form_widget(form.save) }}
+            {{ form_widget(form.publish) }}
+            {{ form_widget(form.cancel) }}
+        {% endblock %}
     {% endembed %}
 {% endblock %}
 

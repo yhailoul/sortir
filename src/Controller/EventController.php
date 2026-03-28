@@ -93,8 +93,10 @@ class EventController extends AbstractController
         $eventForm->handleRequest($request);
 
         if ($eventForm->isSubmitted() && $eventForm->isValid()) {
+            $buttonClicked = $eventForm->getClickedButton();
+            $action = $buttonClicked->getName() ?? 'save'; // Renvoie save par défaut si null pour éviter l'erreur
             $imageFile = $eventForm->get('eventPhoto')->getData();
-            $eventManager->createEvent($event, $this->getUser(), $imageFile);
+            $eventManager->createEvent($event, $this->getUser(), $imageFile, $action);
 
             $this->addFlash('success', 'Event created!');
 
