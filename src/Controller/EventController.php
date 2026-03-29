@@ -111,11 +111,10 @@ class EventController extends AbstractController
 
     #[Route('/edit/{id}', name: 'edit', requirements: ['id' => '\d+'])]
     public function editEvent(
-        int                    $id,
-        EventRepository        $eventRepository,
-        EntityManagerInterface $entityManager,
-        Request                $request,
-        FileUploader           $fileUploader
+        int             $id,
+        EventRepository $eventRepository,
+        Request         $request,
+        EventManager    $eventManager
     ): Response
     {
 
@@ -129,11 +128,10 @@ class EventController extends AbstractController
         $eventForm = $this->createForm(EventType::class, $event);
         $eventForm->handleRequest($request);
         if ($eventForm->isSubmitted() && $eventForm->isValid()) {
-            $this->handleFileUploads($event, $eventForm, $fileUploader);
-            $duration = $event->getDateStartHour()->diff($event->getDateEndHour());
-            $event->setDuration($duration);
-            $entityManager->persist($event);
-            $entityManager->flush();
+            $buttonClicked = $eventForm->getClickedButton();
+            $action = $buttonClicked->getName() ?? 'save'; // Renvoie save par défaut si null pour éviter l'erreur
+            $imageFile = $eventForm->get('eventPhoto')->getData();
+            $eventManager->createEvent($event, $this->getUser(), $imageFile, $action);
             $this->addFlash('success', 'Event edited!');
 
             return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
