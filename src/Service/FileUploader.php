@@ -34,4 +34,17 @@ readonly class FileUploader
     {
         return $this->targetDirectory;
     }
+
+    public function delete(?string $fileName): void
+    {
+        if (!$fileName) {
+            return;
+        }
+
+        $fullPath = $this->getTargetDirectory() . '/' . $fileName;
+
+        if (file_exists($fullPath)) {
+            unlink($fullPath);
+        }
+    }
 }
