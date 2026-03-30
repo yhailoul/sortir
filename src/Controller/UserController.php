@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\City;
 use App\Entity\User;
 use App\Form\UserType;
+use App\Form\VilleType;
 use App\Repository\CityRepository;
 use App\Repository\UserRepository;
 use App\Service\FileUploader;
@@ -65,10 +66,20 @@ final class UserController extends AbstractController
     }
     #[Route('/city', name: 'app_user_cityList', methods: ['GET', 'POST'])]
     #[IsGranted("ROLE_ADMIN")]
-    public function cityList(Request $request,CityRepository $cityRepository): Response{
+    public function cityList(Request $request,CityRepository $cityRepository, EntityManagerInterface $entityManager): Response{
+        $city = new City();
+        $form = $this->createForm(VilleType::class, $city);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            // $formDataCity = $form->getData()->getCity();
+            $entityManager->persist($city);
+            $entityManager->flush();
+            return $this->redirectToRoute('app_user_cityList', [], Response::HTTP_SEE_OTHER);
+        }
         $cities = $cityRepository->findAll();
         return $this->render('user/cityList.html.twig', [
             'cities' => $cities,
+            'newCityForm' => $form,
         ]);
     }
     #[Route('/city/new-city', name: 'app_user_newCity', methods: ['GET', 'POST'])]
@@ -77,14 +88,16 @@ final class UserController extends AbstractController
                             EntityManagerInterface $entityManager): Response
     {
         $city = new City();
-        $form = $this->createForm(UserType::class, $city);
+        $form = $this->createForm(VilleType::class, $city);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
            // $formDataCity = $form->getData()->getCity();
             $entityManager->persist($city);
             $entityManager->flush();
-        }return $this->redirectToRoute('app_user_cityList', ['newCityForm'=>$form], Response::HTTP_SEE_OTHER);
+            $this->addFlash('success', 'City has been created.');
+            return $this->redirectToRoute('app_user_cityList', [], Response::HTTP_SEE_OTHER);
+        }return $this->render('user/cityList.html.twig', ['newCityForm'=>$form]);
     }
 
     #[Route('/{id}', name: 'app_user_show', methods: ['GET'])]
