@@ -55,10 +55,6 @@ class EventType extends AbstractType
                 'class' => Location::class,
                 'choice_label' => "name",
             ])
-            ->add('eventStatus', EntityType::class, [
-                'class' => Status::class,
-                'choice_label' => "label",
-            ])
             ->add('eventPhoto', FileType::class, [
                 'label' => 'Event Picture',
                 'mapped' => false,
