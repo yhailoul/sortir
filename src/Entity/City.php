@@ -24,7 +24,7 @@ class City
     #[Assert\NotBlank]
     private ?string $zipCode = null;
 
-    #[ORM\OneToMany(targetEntity: Location::class, mappedBy: 'city')]
+    #[ORM\OneToMany(targetEntity: Location::class, mappedBy: 'city', cascade: ['remove'])]
     #[ORM\JoinColumn(nullable: false)]
     private Collection $locationsList;
 

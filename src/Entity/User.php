@@ -66,13 +66,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Event>
      */
-    #[ORM\OneToMany(targetEntity: Event::class, mappedBy: 'organizer')]
+    #[ORM\OneToMany(targetEntity: Event::class, mappedBy: 'organizer', cascade:['remove'] )]
     private Collection $organizerEvents;
 
     /**
      * @var Collection<int, Event>
      */
-    #[ORM\ManyToMany(targetEntity: Event::class, inversedBy: 'participantList')]
+    #[ORM\ManyToMany(targetEntity: Event::class, inversedBy: 'participantList') ]
     private Collection $eventInscription;
 
     #[ORM\ManyToOne(inversedBy: 'participant')]

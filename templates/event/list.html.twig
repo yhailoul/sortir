@@ -42,12 +42,15 @@
                         </tr>
                     {% else %}
                         {% for event in displayEvents %}
+                            {% if event.eventStatus.label != "Historized" %}
                             <tr>
                                 <td>{{ event.name }}</td>
                                 <td>{{ event.dateStartHour|date('d/m/Y') }}</td>
                                 <td>{{ event.registrationDeadline|date('d/m/Y') }}</td>
                                 <td>{{ event.participantList|length }}/{{ event.nbMaxRegistrations }}</td>
+
                                 <td>{{ event.eventStatus.label }}</td>
+
                                 <td>
                                     {% if app.user in event.participantList or app.user == event.organizer %}
                                         <span>✓</span>
@@ -75,6 +78,7 @@
                                     {% endif %}
                                 </td>
                             </tr>
+                            {% endif %}
                         {% endfor %}
                     {% endif %}
                     </tbody>

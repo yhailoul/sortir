@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Event;
 use App\Entity\User;
 use App\Entity\Location;
+use App\Form\CancelledEventType;
 use App\Form\EventType;
 use App\Form\FilterSearchType;
 use App\Form\LocationType;
@@ -159,6 +160,44 @@ class EventController extends AbstractController
         }
         return $this->render('event/edit.html.twig', [
             'eventFormEdit' => $eventForm->createView()
+        ]);
+    }
+
+    #[Route('/cancel/{id}', name: 'cancelled', requirements: ['id' => '\d+'])]
+    #[IsGranted("ROLE_ADMIN")]
+    public function cancelEvent(
+        int             $id,
+        EventRepository $eventRepository,
+        Request         $request,
+        EntityManagerInterface $manager
+    ): Response
+    {
+
+        $event = $eventRepository->find($id);
+//        $eventCancelledStatus=$event->getEventStatus()->setLabel("canceled");
+//        $event->setEventStatus($eventCancelledStatus);
+//        $event->setName($event->getName());
+//        $event->setDateStartHour($event->getDateStartHour());
+//        $event->setDateEndHour($event->getDateEndHour());
+//        $event->setRegistrationDeadline($event->getRegistrationDeadline());
+//        $event->setNbMaxRegistrations($event->getNbMaxRegistrations());
+//        $event->setEventLocation($event->getEventLocation());
+//        $event->setEventStatus($event->getEventStatus());
+//        $event->setPhoto($event->getPhoto());
+
+
+        $form = $this->createForm(CancelledEventType::class, $event);
+        $form->handleRequest($request);
+        if ($form->isSubmitted()) {
+            $manager->persist($event);
+            $manager->flush();
+
+            $this->addFlash('success', 'Event cancelled');
+
+            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+        }
+        return $this->render('event/cancelledEvent.html.twig', [
+            'eventFormCancelled' => $form->createView()
         ]);
     }
 

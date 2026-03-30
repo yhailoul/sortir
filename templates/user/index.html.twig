@@ -32,8 +32,9 @@
                     {% elseif user.active == false and is_granted('ROLE_ADMIN') %}
                             <a onclick="confirm('Do you really want to ACTIVATE user: {{ user.username }} ?')" href="{{ path('app_user_activate_admin', {'id': user.id}) }}">Activate User</a>
                     {% endif %}
+                    {% if is_granted("ROLE_ADMIN") %}
                     <a onclick="confirm('Do you really want to DELETE user: {{ user.username }} PERMANENTLY?')" href="{{ path('app_user_delete', { 'id':user.id }) }}">Delete User</a>
-
+                    {% endif %}
                 </td>
             </tr>
         {% else %}
