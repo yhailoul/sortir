@@ -10,8 +10,10 @@ use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Image;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 class UserType extends AbstractType
 {
@@ -49,7 +51,15 @@ class UserType extends AbstractType
                         'image/webp'
                     ], maxSizeMessage: 'Maximum file size allowed is 1MB', mimeTypesMessage: 'Only JPG, PNG, webp files are allowed')
                 ]
-
+            ])
+            ->add('csvFile', FileType::class, [
+                'label' => 'CSV File',
+                'mapped' => false,
+                'required' => false,
+                'constraints' => [
+                    new NotBlank(),
+                    new File(['mimeTypes' => ['text/csv', 'text/plain']])
+                ]
             ]);
     }
 

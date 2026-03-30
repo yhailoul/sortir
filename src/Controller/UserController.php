@@ -7,6 +7,7 @@ use App\Form\UserType;
 use App\Repository\UserRepository;
 use App\Service\AvatarService;
 use App\Service\FileUploader;
+use App\Service\UserCsvImporter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -19,6 +20,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/user')]
 final class UserController extends AbstractController
 {
+    public function __construct(private readonly UserCsvImporter $userCsvImporter)
+    {
+    }
+
     #[Route(name: 'app_user_index', methods: ['GET'])]
     public function index(UserRepository $userRepository): Response
     {
@@ -34,7 +39,8 @@ final class UserController extends AbstractController
                         EntityManagerInterface      $entityManager,
                         UserPasswordHasherInterface $userPasswordHasher,
                         FileUploader                $fileUploader,
-                        AvatarService               $defaultAvatar): Response
+                        AvatarService               $defaultAvatar,
+                        UserCsvImporter             $csvImporter): Response
     {
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
@@ -50,6 +56,17 @@ final class UserController extends AbstractController
             $user->setActive(true);
             $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
             $this->handleFileUploads($user, $form, $fileUploader);
+
+// Bout de code de référence à adapter.
+//            $file   = $form->get('csvFile')->getData();
+//            $result = $this->userCsvImporter->import($file->getPathname());
+//            $this->addFlash('success', "{$result['created']} utilisateurs créés.");
+//            foreach ($result['errors'] as $error) {
+//                $this->addFlash('warning', $error);
+//            }
+//            return $this->redirectToRoute('admin_users_import');
+
+
             $defaultAvatar->correctionPhotoProfile($user);
 
             $entityManager->persist($user);
