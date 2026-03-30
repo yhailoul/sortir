@@ -8,6 +8,7 @@ use App\Entity\Status;
 use Doctrine\ORM\Mapping\Entity;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ButtonType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
@@ -52,9 +53,12 @@ class EventType extends AbstractType
                 ]
             ])
             ->add('eventLocation', EntityType::class, [
+                'row_attr' =>[
+                    'id' => 'eventLocation'],
                 'class' => Location::class,
                 'choice_label' => "name",
             ])
+
             ->add('eventStatus', EntityType::class, [
                 'class' => Status::class,
                 'choice_label' => "label",

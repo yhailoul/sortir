@@ -11,74 +11,80 @@
     <div class="content">
         <h2>event List</h2>
         <div class="searchBar">
-            {{form_start(filterForm) }}
+            {{ form_start(filterForm) }}
             {{ form_widget(filterForm) }}
             <button>Search</button>
             {{ form_end(filterForm) }}
         </div>
         <section>
-
             <div class="">
                 <table class="">
                     <thead>
-                    <tr>Event title</tr>
-                    <tr>Date of the event</tr>
-                    <tr>Closing date</tr>
-                    <tr>Places Left</tr>
-                    <tr>Status</tr>
-                    <tr>Signed-up</tr>
-                    <tr>Organizer</tr>
-                    <tr>Actions</tr>
+                    <tr>
+                        <th>Event title</th>
+                        <th>Date of the event</th>
+                        <th>Closing date</th>
+                        <th>Places Left</th>
+                        <th>Status</th>
+                        <th>Signed-up</th>
+                        <th>Organizer</th>
+                        <th>Campus</th>
+                        <th>Actions</th>
+                    </tr>
                     </thead>
                     <tbody>
-                    {% for event in events %}
+
+                    {% set displayEvents = events is not empty ? events : eventAll %}
+
+                    {% if displayEvents is empty %}
                         <tr>
-                            <td>{{ event.name }}</td>
-                            <td>{{ event.dateStartHour|date('d/m/Y') }}</td>
-                            <td>{{ event.registrationDeadline|date('d/m/Y') }}</td>
-                            <td>{{ event.participantList|length }}/{{ event.nbMaxRegistrations }}</td>
-                            <td>{{ event.eventStatus.label }}</td>
-                            <td>
-                                {% if app.user in event.participantList or event.organizer  %}
-                                    <span>✓</span>
-                                {% endif %}
-                            </td>
-                            <td> <a href="{{ path('app_user_show', {'id':event.organizer.id}) }}">{{ event.organizer.username }}</a></td>
-                            <td>
-                                {% if app.user in event.participantList %}
-                                    <span><a href="{{ path('events_detail', {'id': event.id}) }}">Show</a></span>
-                                    <span><a id="unsubscribe"
-                                             onclick="return confirm('Are you sure you want to unsubscribe from this event?')"
-                                             href="{{ path('events_unsubscribe', {'id':event.id}) }}">Withdraw</a></span>
-                                {% elseif app.user in event.organizer and event.registrationDeadline > date('now') %}
-                                    <span><a href="{{ path('events_detail', {'id':event.id}) }}">Show</a></span>
-                                    <span><a href="{{ path('events_edit', {'id':event.id}) }}">Modify</a></span>
-                                {% else %}
-                                    <span><a href="{{ path('events_detail', {'id':event.id}) }}">Show</a></span>
-                                {% endif %}
-                            </td>
+                            <td colspan="8" style="text-align: center;">Aucun événement trouvé</td>
                         </tr>
-                    {% endfor %}
+                    {% else %}
+                        {% for event in displayEvents %}
+                            <tr>
+                                <td>{{ event.name }}</td>
+                                <td>{{ event.dateStartHour|date('d/m/Y') }}</td>
+                                <td>{{ event.registrationDeadline|date('d/m/Y') }}</td>
+                                <td>{{ event.participantList|length }}/{{ event.nbMaxRegistrations }}</td>
+                                <td>{{ event.eventStatus.label }}</td>
+                                <td>
+                                    {% if app.user in event.participantList or app.user == event.organizer %}
+                                        <span>✓</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if event.organizer %}
+                                        <a href="{{ path('app_user_show', {'id': event.organizer.id}) }}">{{ event.organizer.username }}</a>
+                                    {% else %}
+                                        <span class="text-muted">Organisateur supprimé</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ event.campus.name }}</td>
+                                <td>
+                                    {% if app.user in event.participantList %}
+                                        <span><a href="{{ path('events_detail', {'id': event.id}) }}">Show</a></span>
+                                        <span><a id="unsubscribe"
+                                                 onclick="return confirm('Are you sure you want to unsubscribe from this event?')"
+                                                 href="{{ path('events_unsubscribe', {'id': event.id}) }}">Withdraw</a></span>
+                                    {% elseif app.user == event.organizer and event.registrationDeadline > date('now') %}
+                                        <span><a href="{{ path('events_detail', {'id': event.id}) }}">Show</a></span>
+                                        <span><a href="{{ path('events_edit', {'id': event.id}) }}">Modify</a></span>
+                                    {% else %}
+                                        <span><a href="{{ path('events_detail', {'id': event.id}) }}">Show</a></span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
                     </tbody>
                 </table>
             </div>
             <br>
-               <p>tous les événements </p>
-                    {% for event in eventList %}
-                    <article>
-                        <p>{{ loop.index }} : {{ event.name }}</p>
-                        <a href="{{ path('events_register', {'id': event.id}) }}">Register</a>
-                        <a href="{{ path('events_unsubscribe', {'id': event.id}) }}">Unsubscribe</a>
-                   </article>
-                    {% endfor %}
-
         </section>
     </div>
 
     <script>
-
     </script>
 
 {% endblock %}
-
-

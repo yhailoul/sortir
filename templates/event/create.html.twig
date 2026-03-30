@@ -9,6 +9,8 @@
             {{ form_widget(form.cancel) }}
         {% endblock %}
     {% endembed %}
+
+    <a href="{{ path('events_location_create') }}">redirection vers creation de nouvelles locations </a>
 {% endblock %}
 
 {% block javascripts %}
@@ -77,5 +79,7 @@
                 }
             });
         });
+
     </script>
+
 {% endblock %}

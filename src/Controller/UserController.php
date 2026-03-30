@@ -71,7 +71,6 @@ final class UserController extends AbstractController
         $form = $this->createForm(VilleType::class, $city);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            // $formDataCity = $form->getData()->getCity();
             $entityManager->persist($city);
             $entityManager->flush();
             return $this->redirectToRoute('app_user_cityList', [], Response::HTTP_SEE_OTHER);
@@ -175,12 +174,10 @@ final class UserController extends AbstractController
     }
     #[Route('/{id}/deactivate/admin', name: 'app_user_deactivate_admin', methods: ['GET', 'POST'])]
     #[isGranted('ROLE_ADMIN')]
-    public function Deactivate(Request $request,
-                                         Security $security,
-                                         User $user,
-                                         EntityManagerInterface $entityManager,
-                                         UserRepository $repository,
-                                         int $id): Response
+    public function Deactivate(Security $security,
+                                 EntityManagerInterface $entityManager,
+                                 UserRepository $repository,
+                                 int $id): Response
     {
         $user= $repository->find($id);
         $authUser = $security->getUser();
@@ -203,9 +200,7 @@ final class UserController extends AbstractController
     }
     #[Route('/delete/{id}', name: 'app_user_delete', methods: ['GET','POST'])]
     #[isGranted('ROLE_ADMIN')]
-    public function delete(Request $request,
-                           User $user,
-                           int $id,
+    public function delete(int $id,
                            UserRepository $repository,
                            Security $security,
                            EntityManagerInterface $entityManager): Response
