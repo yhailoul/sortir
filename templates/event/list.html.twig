@@ -15,7 +15,6 @@
             {{ form_widget(filterForm) }}
             <button>Search</button>
             {{ form_end(filterForm) }}
-
         </div>
         <section>
 
@@ -64,6 +63,15 @@
                 </table>
             </div>
             <br>
+               <p>tous les événements </p>
+                    {% for event in eventList %}
+                    <article>
+                        <p>{{ loop.index }} : {{ event.name }}</p>
+                        <a href="{{ path('events_register', {'id': event.id}) }}">Register</a>
+                        <a href="{{ path('events_unsubscribe', {'id': event.id}) }}">Unsubscribe</a>
+                   </article>
+                    {% endfor %}
+
         </section>
     </div>
 

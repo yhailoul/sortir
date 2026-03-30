@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-use App\Entity\User;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\String\Slugger\SluggerInterface;
@@ -34,5 +33,18 @@ readonly class FileUploader
     public function getTargetDirectory(): string
     {
         return $this->targetDirectory;
+    }
+
+    public function delete(?string $fileName): void
+    {
+        if (!$fileName) {
+            return;
+        }
+
+        $fullPath = $this->getTargetDirectory() . '/' . $fileName;
+
+        if (file_exists($fullPath)) {
+            unlink($fullPath);
+        }
     }
 }

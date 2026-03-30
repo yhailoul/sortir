@@ -4,8 +4,8 @@ namespace App\Repository;
 
 use App\Entity\Campus;
 use App\Entity\Event;
+use App\Entity\Status;
 use App\Entity\User;
-use App\Form\CampusFilterType;
 use App\Form\Model\FilterSearch;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -24,69 +24,76 @@ class EventRepository extends ServiceEntityRepository
 
     public function filterBySelection(User $user, FilterSearch $filter, ?Campus $campus)
     {
+
         $qb = $this->createQueryBuilder('e');
 
+        dump('SQL REçU: ' . $qb->getDQL());
+        dump('paramètres : ' . $qb->getParameters());
 
-        if ($campus !== null && $campus->getId()) {
-            $qb->andWhere('e.campus = :campus')
-                ->setParameter('campus', $campus);
-            dump('Filtre campus appliqué avec ID: ' . $campus->getId());
+        if ($campus !== null) {
+            if ($campus->getId()) {
+                $qb->andWhere('e.campus = :campus')
+                    ->setParameter('campus', $campus);
+            }
         }
-
         if ($filter->getSearchTerm()) {
             $qb->andWhere('e.name LIKE :searchTerm')
                 ->setParameter('searchTerm', '%' . $filter->getSearchTerm() . '%');
         }
-
         if ($filter->getStartDate()) {
             $start = clone $filter->getStartDate();
-            $start->setTime(0, 0, 0);
+            $start->setTime(0, 0, 0); // Début de journée
             $end = clone $filter->getStartDate();
-            $end->setTime(23, 59, 59);
+            $end->setTime(23, 59, 59); // Fin de journée
 
             $qb->andWhere('e.dateStartHour BETWEEN :startDate AND :endDate')
                 ->setParameter('startDate', $start)
                 ->setParameter('endDate', $end);
         }
-
         if ($filter->getEndDate()) {
             $end = clone $filter->getEndDate();
-            $end->setTime(23, 59, 59);
+            $end->setTime(23, 59, 59); // Fin de journée : 23:59:59
 
             $qb->andWhere('e.dateEndHour <= :endDate')
                 ->setParameter('endDate', $end);
         }
+        $orConditions = [];
 
-
-//        $orConditions = [];
-
-        if($filter->getOrganized()){
+        if ($filter->getOrganized()) {
             $qb->orWhere('e.organizer = :organizer')
                 ->setParameter('organizer', $user);
 
         }
-        if($filter->getSignedUp()){
+        if ($filter->getSignedUp()) {
             $qb->orWhere(':user MEMBER OF e.participantList')
                 ->setParameter('user', $user);
 
         }
-        if($filter->getPassed()){
+        if ($filter->getPassed()) {
             $qb->orWhere('e.dateEndHour < :now')
                 ->setParameter('now', new DateTime('now'));
 
         }
-
         if (!empty($orConditions)) {
             $qb->andWhere($qb->expr()->orX()->addMultiple($orConditions));
         }
 
         $qb->orderBy('e.dateStartHour', 'ASC');
         $query = $qb->getQuery();
-        dump($query->getSQL());
+        (dump($query->getSQL()));
         dump($query->getParameters());
+        return $qb->getQuery()->getResult();
 
 
-        return $qb->getQuery()
+    }
+
+    public function findEventsToUpdate()
+    {
+        return $this->createQueryBuilder('e')
+            ->leftJoin('e.eventStatus', 'eStatus')
+            ->andWhere('eStatus.label != :status')
+            ->setParameter('status', Status::HISTORIZED)
+            ->getQuery()
             ->getResult();
 
     }
@@ -102,37 +109,6 @@ class EventRepository extends ServiceEntityRepository
 //            ->getResult();
 //
 //        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 //        public function findByOrganizer(User $user): array

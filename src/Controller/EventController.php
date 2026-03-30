@@ -11,41 +11,50 @@ use App\Form\FilterSearchType;
 use App\Form\Model\FilterSearch;
 use App\Repository\CampusRepository;
 use App\Repository\EventRepository;
+use App\Service\EventManager;
+use App\Service\EventRegistrationManager;
 use App\Service\FileUploader;
+use App\Service\StatusManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('events', name: 'events_')]
 class EventController extends AbstractController
 {
 
-    #[Route('/list', name: 'listFilters', methods: ['GET','POST'])]
-    public function listFilters(Request $request,
-                                EventRepository $eventRepository,
-                                Security $security,
+    #[Route('/list', name: 'listFilters', methods: ['GET', 'POST'])]
+    public function listFilters(Request          $request,
+                                EventRepository  $eventRepository,
+                                Security         $security, StatusManager $statusManager, EntityManagerInterface $entityManager,
                                 CampusRepository $campusRepository): Response
     {
+        $events = [];
+        $eventList = $eventRepository->findEventsToUpdate();
         $user = $security->getUser();
         if (!$user instanceof User) {
             throw $this->createAccessDeniedException('utilisateur inexistant');
         }
 
-        $events=[];
-        $eventList = $eventRepository->findAll();
+
+        foreach ($eventList as $e) {
+            $statusManager->updateEventStatus($e);
+        }
+        $entityManager->flush();
 
         $eventSearch = new FilterSearch();
         $filterForm = $this->createForm(FilterSearchType::class, $eventSearch);
         $filterForm->handleRequest($request);
         $formData = $filterForm->getData();
 
-        if ($filterForm->isSubmitted() ) {
-            $campus= $eventSearch->getCampus();
-            $events = $eventRepository->filterBySelection($user, $eventSearch, $campus );
+        if ($filterForm->isSubmitted()) {
+            $campus = $eventSearch->getCampus();
+            $events = $eventRepository->filterBySelection($user, $eventSearch, $campus);
 
         }
         return $this->render('event/list.html.twig', [
@@ -62,7 +71,7 @@ class EventController extends AbstractController
     {
         $event = $eventRepository->find($id);
         if (!$event) {
-            throw $this->createNotFoundException('Pas de event avec ce id ' . $id);
+            throw $this->createNotFoundException('Not event with the id ' . $id);
         }
 
 
@@ -72,31 +81,26 @@ class EventController extends AbstractController
     }
 
     #[Route('/create', name: 'create', methods: ['POST', 'GET'])]
+    #[IsGranted("ROLE_USER")]
     public function createEvent(
-        EntityManagerInterface $entityManager,
-        Request                $request,
-        FileUploader           $fileUploader
+        Request      $request,
+        EventManager $eventManager
     ): Response
     {
         $event = new Event();
         $eventForm = $this->createForm(EventType::class, $event);
 
         $eventForm->handleRequest($request);
-        $user = $this->getUser();
 
         if ($eventForm->isSubmitted() && $eventForm->isValid()) {
-            $this->handleFileUploads($event, $eventForm, $fileUploader);
-            $duration = $event->getDateStartHour()->diff($event->getDateEndHour());
-            $event->setDuration($duration);
-            $event->addParticipantList($user);
-
-            $entityManager->persist($event);
-            $entityManager->flush();
+            $buttonClicked = $eventForm->getClickedButton();
+            $action = $buttonClicked->getName() ?? 'save'; // Renvoie save par défaut si null pour éviter l'erreur
+            $imageFile = $eventForm->get('eventPhoto')->getData();
+            $eventManager->createEvent($event, $this->getUser(), $imageFile, $action);
 
             $this->addFlash('success', 'Event created!');
 
             return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
-
         }
 
         return $this->render('event/create.html.twig', [
@@ -105,25 +109,29 @@ class EventController extends AbstractController
     }
 
 
-    #[ROUTE('/edit/{id}', name: 'edit', requirements: ['id' => '\d+'])]
+    #[Route('/edit/{id}', name: 'edit', requirements: ['id' => '\d+'])]
     public function editEvent(
-        int                    $id,
-        EventRepository        $eventRepository,
-        EntityManagerInterface $entityManager,
-        Request                $request,
-        FileUploader           $fileUploader
+        int             $id,
+        EventRepository $eventRepository,
+        Request         $request,
+        EventManager    $eventManager
     ): Response
     {
+
         $event = $eventRepository->find($id);
+
+        if (!$this->isGranted('EVENT_EDIT', $event)) {
+            $this->addFlash('danger', 'You do not have permission to modify this event.');
+            return $this->redirectToRoute('events_listFilters');
+        }
 
         $eventForm = $this->createForm(EventType::class, $event);
         $eventForm->handleRequest($request);
         if ($eventForm->isSubmitted() && $eventForm->isValid()) {
-            $this->handleFileUploads($event, $eventForm, $fileUploader);
-            $duration = $event->getDateStartHour()->diff($event->getDateEndHour());
-            $event->setDuration($duration);
-            $entityManager->persist($event);
-            $entityManager->flush();
+            $buttonClicked = $eventForm->getClickedButton();
+            $action = $buttonClicked->getName() ?? 'save'; // Renvoie save par défaut si null pour éviter l'erreur
+            $imageFile = $eventForm->get('eventPhoto')->getData();
+            $eventManager->createEvent($event, $this->getUser(), $imageFile, $action);
             $this->addFlash('success', 'Event edited!');
 
             return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
@@ -154,73 +162,38 @@ class EventController extends AbstractController
     }
 
     #[Route('/{id}/register', name: 'register', requirements: ['id' => '\d+'])]
-    public function registerEvent(Event $event, EntityManagerInterface $entityManager): Response
+    public function registerEvent(Event $event, EventRegistrationManager $eventRegistrationMananger): Response
     {
         $user = $this->getUser();
 
-        // Vérifie si le user est déjà inscrit
-        if ($event->getParticipantList()->contains($user)) {
-            $this->addFlash('warning', 'Event already registered!');
-            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+        //Récupère soit le texte de l'erreur soit null si tout s'est bien passé
+        $error = $eventRegistrationMananger->subscribeCheck($event, $user);
+
+        //Si erreur
+        if ($error) {
+            $this->addFlash('danger', $error);
+        } else {
+            $this->addFlash('success', 'Event registered!');
+
         }
-
-        // Vérifie la date limite d'inscription
-        if ($event->getRegistrationDeadline() < new \DateTime()) {
-            $this->addFlash('danger', 'The registration deadline has passed!');
-            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
-        }
-
-
-        // Vérifie le nombre de places
-        if ($event->getParticipantList()->count() >= $event->getNbMaxRegistrations()) {
-            $this->addFlash('danger', 'There are maximum number of participants!');
-            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
-        }
-
-        $event->addParticipantList($user);
-        $entityManager->persist($event);
-        $entityManager->flush();
-
-        $this->addFlash('success', 'Event registered!');
         return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
-
     }
 
     #[Route('/{id}/unsubscribe', name: 'unsubscribe', requirements: ['id' => '\d+'])]
-    public function unsubscribeEvent(Event $event, EntityManagerInterface $entityManager): Response
+    public function unsubscribeEvent(Event $event, EventRegistrationManager $eventRegistrationMananger): Response
     {
         $user = $this->getUser();
 
-        // Vérifie si le user est inscrit
-        if (!$event->getParticipantList()->contains($user)) {
-            $this->addFlash('warning', 'You are not registered for this event.');
-            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+        //Récupère soit le texte de l'erreur soit null si tout s'est bien passé
+        $error = $eventRegistrationMananger->unsubscribeCheck($event, $user);
+
+        //Si erreur
+        if ($error) {
+            $this->addFlash('danger', $error);
+        } else {
+            $this->addFlash('success', 'You have been unsubscribed from the event !');
+
         }
-
-        $event->removeParticipantList($user);
-        $entityManager->persist($event);
-        $entityManager->flush();
-
-        $this->addFlash('success', 'You have unsubscribed from the event !');
         return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
-
-    }
-
-    private function handleFileUploads(Event $event, $form, FileUploader $fileUploader): void
-    {
-
-        $imageFile = $form->get('eventPhoto')->getData();
-
-        if ($imageFile) {
-            $oldPhoto = $event->getPhoto();
-            $event->setPhoto($fileUploader->upload($imageFile));
-
-            if ($oldPhoto) {
-                //Récupère le chemin complet de l'ancienne image
-                $fullPath = $fileUploader->getTargetDirectory() . '/' . $oldPhoto;
-                //La supprime
-                unlink($fullPath);
-            }
-        }
     }
 }

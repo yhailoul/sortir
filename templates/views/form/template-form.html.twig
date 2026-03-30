@@ -3,6 +3,6 @@
 <h2>{% block formTitle %}{% endblock %}</h2>
 
 {{ form_start(form) }}
-{{ form_widget(form) }}
-<button>{% block buttonLabel %}{% endblock %}</button>
+{% block buttonLabel %}{% endblock %}
+{{ form_rest(form) }}
 {{ form_end(form) }}

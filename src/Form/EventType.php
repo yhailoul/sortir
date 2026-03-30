@@ -2,7 +2,6 @@
 
 namespace App\Form;
 
-use App\Entity\Campus;
 use App\Entity\Event;
 use App\Entity\Location;
 use App\Entity\Status;
@@ -12,11 +11,13 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Image;
+use function Sodium\add;
 
 class EventType extends AbstractType
 {
@@ -59,7 +60,7 @@ class EventType extends AbstractType
                 'choice_label' => "label",
             ])
             ->add('eventPhoto', FileType::class, [
-                'label' => 'Profile Picture',
+                'label' => 'Event Picture',
                 'mapped' => false,
                 'required' => false,
                 'constraints' => [
@@ -71,10 +72,9 @@ class EventType extends AbstractType
                 ]
 
             ])
-            ->add('campus', EntityType::class, [
-                'class' => Campus::class,
-                'choice_label' => "name",
-            ]);
+            ->add('save', SubmitType::class, ['label' => 'Save'])
+            ->add('publish', SubmitType::class, ['label' => 'Publish'])
+            ->add('cancel', SubmitType::class, ['label' => 'Cancel']);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

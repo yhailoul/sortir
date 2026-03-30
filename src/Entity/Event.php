@@ -7,7 +7,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
+#[Assert\Callback('validateDates')]
 #[ORM\Entity(repositoryClass: EventRepository::class)]
 class Event
 {
@@ -16,25 +19,37 @@ class Event
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 100)]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 3, max: 255, minMessage: "The name is too short")]
     private ?string $name = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Assert\NotBlank]
+    #[Assert\GreaterThan('now')]
     private ?\DateTime $dateStartHour = null;
 
     #[ORM\Column]
     private ?\DateInterval $duration = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Assert\NotBlank]
+    #[Assert\GreaterThan(propertyPath: "dateStartHour", message: "The end date must be after the start date")]
     private ?\DateTime $dateEndHour = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank]
+    #[Assert\LessThan(propertyPath: "dateStartHour", message: "The registration deadline must be before the start of the event")]
+    #[Assert\GreaterThan('now', message: "The registration deadline must be in the future")]
     private ?\DateTime $registrationDeadline = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: "Please indicate the number of participants")]
+    #[Assert\GreaterThan(0)]
     private ?int $nbMaxRegistrations = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: "Please describe your event")]
     private ?string $infosEvent = null;
 
     #[ORM\ManyToOne(inversedBy: 'organizerEvents')]
@@ -242,5 +257,30 @@ class Event
         $this->photo = $photo;
 
         return $this;
+    }
+
+    public function validateDates(ExecutionContextInterface $context): void
+    {
+        if ($this->getDateStartHour() && $this->getDateEndHour()) {
+            if ($this->getDateEndHour() <= $this->getDateStartHour()) {
+                $context->buildViolation('The end date must be later than the start date.')
+                    ->atPath('dateEndHour')
+                    ->addViolation();
+            }
+        }
+
+        if ($this->getRegistrationDeadline() && $this->getDateStartHour()) {
+            if ($this->getRegistrationDeadline() >= $this->getDateStartHour()) {
+                $context->buildViolation('The registration deadline must be before the start date.')
+                    ->atPath('registrationDeadline')
+                    ->addViolation();
+            }
+        }
+
+        if ($this->getDateStartHour() && $this->getDateStartHour() < new \DateTime()) {
+            $context->buildViolation('The start date cannot be in the past.')
+                ->atPath('dateStartHour')
+                ->addViolation();
+        }
     }
 }
