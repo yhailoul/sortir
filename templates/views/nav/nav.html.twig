@@ -41,9 +41,19 @@
 </div>
 
 <script>
-    const photo = document.getElementById('profilePicture')
-    const menu = document.getElementById('menu')
-    photo.addEventListener('click', () => {
-        menu.classList.toggle('hidden')
-    })
+    const photo = document.getElementById('profilePicture');
+    const menu = document.getElementById('menu');
+
+    // Ouvre le menu au click
+    photo.addEventListener('click', (e) => {
+        e.stopPropagation(); // Empêche le clic de remonter directement à la window (sinon il s'ouvre pas)
+        menu.classList.toggle('hidden');
+    });
+
+    // Ferme le menu si le clic est ailleurs que sur le menu
+    window.addEventListener('click', (e) => {
+        if (!menu.contains(e.target)) {
+            menu.classList.add('hidden');
+        }
+    });
 </script>
