@@ -27,11 +27,29 @@ class AvatarService
         'gray_modern_abstract.png',
     ];
 
-    public function randUserPhoto(User $user): void
+    public function randUserPhoto(): string
+    {
+        return $this->defaultPhotos[array_rand($this->defaultPhotos)];
+    }
+
+    public function correctionPhotoProfile(User $user): void
     {
         if (!$user->getPhoto()) {
-            $user->setPhoto($this->defaultPhotos[array_rand($this->defaultPhotos)]);
+            $user->setPhoto($this->randUserPhoto());
         }
     }
 
+    public function isDefaultPhoto(string $photo): bool
+    {
+        return in_array($photo, $this->defaultPhotos, true);
+    }
+
+    public function resolvePhotoPath(string $photo): string
+    {
+        if ($this->isDefaultPhoto($photo)) {
+            return 'defaultsPhotosProfile/' . $photo;
+        }
+
+        return 'uploads/' . $photo;
+    }
 }

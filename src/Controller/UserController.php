@@ -30,7 +30,6 @@ final class UserController extends AbstractController
 
     #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
     #[isGranted('ROLE_ADMIN')]
-
     public function new(Request                     $request,
                         EntityManagerInterface      $entityManager,
                         UserPasswordHasherInterface $userPasswordHasher,
@@ -51,7 +50,7 @@ final class UserController extends AbstractController
             $user->setActive(true);
             $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
             $this->handleFileUploads($user, $form, $fileUploader);
-            $defaultAvatar->randUserPhoto($user);
+            $defaultAvatar->correctionPhotoProfile($user);
 
             $entityManager->persist($user);
             $entityManager->flush();
@@ -67,26 +66,38 @@ final class UserController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_user_show', methods: ['GET'])]
-    public function show(User $user): Response
+    public function show(
+        User                   $user,
+        EntityManagerInterface $entityManager,
+        AvatarService          $defaultAvatar): Response
     {
+        if (!$user->getPhoto()) {
+            $defaultAvatar->correctionPhotoProfile($user);
+            $entityManager->flush();
+        }
+
+        $photoPath = $defaultAvatar->resolvePhotoPath($user->getPhoto());
+
         return $this->render('user/show.html.twig', [
             'user' => $user,
+            'photoPath' => $photoPath,
         ]);
     }
 
     #[Route('/{id}/edit', name: 'app_user_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request,
-                         Security $security,
-                         User $user,
-                         int $id,
-                         UserRepository $userRepository,
-                         EntityManagerInterface $entityManager,
-                         FileUploader $fileUploader,
-                         UserPasswordHasherInterface $passwordHasher): Response
+    public function edit(Request                     $request,
+                         Security                    $security,
+                         User                        $user,
+                         int                         $id,
+                         UserRepository              $userRepository,
+                         EntityManagerInterface      $entityManager,
+                         FileUploader                $fileUploader,
+                         UserPasswordHasherInterface $passwordHasher,
+                         AvatarService               $defaultAvatar): Response
     {
-        $user=$userRepository->find($id);
+        $user = $userRepository->find($id);
         $authUser = $security->getUser();
-        if($user === $authUser){
+        if ($user === $authUser) {
             $form = $this->createForm(UserType::class, $user);
             $form->handleRequest($request);
 
@@ -99,12 +110,13 @@ final class UserController extends AbstractController
                     $user->setPassword($hashedPassword);
                 }
 
+                $defaultAvatar->correctionPhotoProfile($user);
                 $this->handleFileUploads($user, $form, $fileUploader);
                 $entityManager->flush();
 
                 return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
             }
-        }else{
+        } else {
             throw $this->createAccessDeniedException('You are not allowed to edit this user.');
         }
         return $this->render('user/edit.html.twig', [
@@ -112,81 +124,84 @@ final class UserController extends AbstractController
             'form' => $form,
         ]);
     }
+
     #[Route('/{id}/activate/admin', name: 'app_user_activate_admin', methods: ['GET', 'POST'])]
     #[isGranted('ROLE_ADMIN')]
-    public function Activate(Request $request,
-                                         Security $security,
-                                         User $user,
-                                         EntityManagerInterface $entityManager,
-                                         UserRepository $repository,
-                                         int $id): Response
+    public function Activate(Request                $request,
+                             Security               $security,
+                             User                   $user,
+                             EntityManagerInterface $entityManager,
+                             UserRepository         $repository,
+                             int                    $id): Response
     {
-        $user= $repository->find($id);
-        if(!$user){
+        $user = $repository->find($id);
+        if (!$user) {
             throw $this->createNotFoundException("User not found");
         }
 
-            if(!$user->isActive()){
-                $user->setActive(true);
-                $entityManager->persist($user);
-                $entityManager->flush();
-                $this->addFlash('success', 'You have activated user:'.$user->getUsername());
-            }else{
-                $this->addFlash('warning', 'This user is already active');
-            }
+        if (!$user->isActive()) {
+            $user->setActive(true);
+            $entityManager->persist($user);
+            $entityManager->flush();
+            $this->addFlash('success', 'You have activated user:' . $user->getUsername());
+        } else {
+            $this->addFlash('warning', 'This user is already active');
+        }
 
 
         return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
     }
+
     #[Route('/{id}/deactivate/admin', name: 'app_user_deactivate_admin', methods: ['GET', 'POST'])]
     #[isGranted('ROLE_ADMIN')]
-    public function Deactivate(Request $request,
-                                         Security $security,
-                                         User $user,
-                                         EntityManagerInterface $entityManager,
-                                         UserRepository $repository,
-                                         int $id): Response
+    public function Deactivate(Request                $request,
+                               Security               $security,
+                               User                   $user,
+                               EntityManagerInterface $entityManager,
+                               UserRepository         $repository,
+                               int                    $id): Response
     {
-        $user= $repository->find($id);
+        $user = $repository->find($id);
         $authUser = $security->getUser();
-        if(!$user){
+        if (!$user) {
             throw $this->createNotFoundException("User not found");
         }
-        if($user === $authUser){
+        if ($user === $authUser) {
             $this->addFlash('warning', 'You cannot deactivate your own account');
             return $this->redirectToRoute('app_user_index');
         }
-            if($user->isActive()){
-                $user->setActive(false);
-                $entityManager->persist($user);
-                $entityManager->flush();
-                $this->addFlash('success', 'You have deactivated user:'.$user->getUsername());
-            }else{
-                $this->addFlash('warning', 'This user is already deactivated');
-            }
+        if ($user->isActive()) {
+            $user->setActive(false);
+            $entityManager->persist($user);
+            $entityManager->flush();
+            $this->addFlash('success', 'You have deactivated user:' . $user->getUsername());
+        } else {
+            $this->addFlash('warning', 'This user is already deactivated');
+        }
         return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
     }
-    #[Route('/delete/{id}', name: 'app_user_delete', methods: ['GET','POST'])]
+
+    #[Route('/delete/{id}', name: 'app_user_delete', methods: ['GET', 'POST'])]
     #[isGranted('ROLE_ADMIN')]
-    public function delete(Request $request,
-                           User $user,
-                           int $id,
-                           UserRepository $repository,
-                           Security $security,
+    public function delete(Request                $request,
+                           User                   $user,
+                           int                    $id,
+                           UserRepository         $repository,
+                           Security               $security,
                            EntityManagerInterface $entityManager): Response
     {
-        $user= $repository->find($id);
+        $user = $repository->find($id);
         $authUser = $security->getUser();
-        if(!$user){
+        if (!$user) {
             throw $this->createNotFoundException("User not found");
         }
-        if($user === $authUser){
+        if ($user === $authUser) {
             $this->addFlash('warning', 'You cannot delete your own account');
             return $this->redirectToRoute('app_user_index');
-        }else{
+        } else {
             $entityManager->remove($user);
             $entityManager->flush();
-            $this->addFlash('success', 'You have deleted user:'.$user->getUsername());
+            $this->addFlash('success', 'You have deleted user:' . $user->getUsername());
         }
 
         return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
