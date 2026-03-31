@@ -11,6 +11,7 @@ use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
+use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -54,9 +55,8 @@ class UserType extends AbstractType
                     new NotBlank(message: 'Lastname is required.'),
                 ],
             ])
-            ->add('phone', NumberType::class, [
+            ->add('phone', TelType::class, [
                 'label' => 'Phone',
-                'required' => false,
                 'attr' => [
                     'placeholder' => 'enter phone number',
                 ],
