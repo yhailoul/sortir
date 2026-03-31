@@ -1,11 +1,18 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-
+    <h2>The Event is {{ event.eventStatus.label }}</h2>
     <h2>Details of {{ event.name }}</h2>
 
     <div>
-        {% if event.eventStatus.label != "cancelled" %}
+        {% if event.eventStatus.label|lower == "canceled" %}
+            <div>
+                <p>Name of the event : {{ event.name }}</p>
+                <p>Status of the event : {{ event.eventStatus.label }}</p>
+                <p>Reason of cancellation: {{ event.infosEvent }}</p>
+            </div>
+
+        {% else %}
             <div>
                 <p>Name of the event : {{ event.name }}</p>
                 <p>Dates and hours of this one : {{ event.dateStartHour|date('d-m-Y H:i') }}
@@ -25,20 +32,13 @@
                 {% for participant in event.participantList %}
                     <p>{{ loop.index }} : {{ participant.username }}</p>
                 {% endfor %}
-            </div>
-
-            <div>
-                <a href="{{ path('events_register', {'id': event.id}) }}">Register</a>
-                <a href="{{ path('events_unsubscribe', {'id': event.id}) }}">Unsubscribe</a>
-                <a href="{{ path('events_edit', {'id': event.id}) }}">Update</a>
-                <a onclick="return confirm('Do you really want to delete {{ event.name }} ?')"
-                   href="{{ path('events_delete', {'id': event.id}) }}">Delete</a>
-            </div>
-        {% else %}
-            <div>
-                <p>Name of the event : {{ event.name }}</p>
-                <p>Status of the event : {{ event.eventStatus.label }}</p>
-                <p>Reason of cancellation: {{ event.infosEvent }}</p>
+                <div>
+                    <a href="{{ path('events_register', {'id': event.id}) }}">Register</a>
+                    <a href="{{ path('events_unsubscribe', {'id': event.id}) }}">Unsubscribe</a>
+                    <a href="{{ path('events_edit', {'id': event.id}) }}">Update</a>
+                    <a onclick="return confirm('Do you really want to delete {{ event.name }} ?')"
+                       href="{{ path('events_delete', {'id': event.id}) }}">Delete</a>
+                </div>
             </div>
         {% endif %}
     </div>

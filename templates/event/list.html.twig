@@ -42,7 +42,7 @@
                         </tr>
                     {% else %}
                         {% for event in displayEvents %}
-                            {% if event.eventStatus.label != "Historized" %}
+                            {% if event.eventStatus.label|lower != "historized" %}
                             <tr>
                                 <td>{{ event.name }}</td>
                                 <td>{{ event.dateStartHour|date('d/m/Y') }}</td>

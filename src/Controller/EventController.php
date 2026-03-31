@@ -174,28 +174,24 @@ class EventController extends AbstractController
     {
 
         $event = $eventRepository->find($id);
-//        $eventCancelledStatus=$event->getEventStatus()->setLabel("canceled");
-//        $event->setEventStatus($eventCancelledStatus);
-//        $event->setName($event->getName());
-//        $event->setDateStartHour($event->getDateStartHour());
-//        $event->setDateEndHour($event->getDateEndHour());
-//        $event->setRegistrationDeadline($event->getRegistrationDeadline());
-//        $event->setNbMaxRegistrations($event->getNbMaxRegistrations());
-//        $event->setEventLocation($event->getEventLocation());
-//        $event->setEventStatus($event->getEventStatus());
-//        $event->setPhoto($event->getPhoto());
-
-
         $form = $this->createForm(CancelledEventType::class, $event);
         $form->handleRequest($request);
-        if ($form->isSubmitted()) {
-            $manager->persist($event);
-            $manager->flush();
+        if($event->getEventStatus()=="canceled"){
+            $this->addFlash('danger', 'Event cancelled!');
+            return $this->redirectToRoute('events_listFilters');
+        }else{
+            $eventCancelledStatus=$event->getEventStatus()->setLabel("canceled");
+            $event->setEventStatus($eventCancelledStatus);
 
-            $this->addFlash('success', 'Event cancelled');
+            if ($form->isSubmitted()) {
+                $manager->persist($event);
+                $manager->flush();
 
-            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+                $this->addFlash('success', 'Event cancelled');
+                return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+            }
         }
+
         return $this->render('event/cancelledEvent.html.twig', [
             'eventFormCancelled' => $form->createView()
         ]);
