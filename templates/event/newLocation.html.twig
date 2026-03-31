@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {{ form_start(locationForm) }}
+    {{ form_widget(locationForm) }}
+    <button type="submit">Créer la location</button>
+    {{ form_end(locationForm) }}
+{% endblock %}
+
+{% block title %}
+New Location
+{% endblock %}
+

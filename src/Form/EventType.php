@@ -52,9 +52,12 @@ class EventType extends AbstractType
                 ]
             ])
             ->add('eventLocation', EntityType::class, [
+                'row_attr' =>[
+                    'id' => 'eventLocation'],
                 'class' => Location::class,
                 'choice_label' => "name",
             ])
+
             ->add('eventStatus', EntityType::class, [
                 'class' => Status::class,
                 'choice_label' => "label",

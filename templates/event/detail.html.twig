@@ -1,38 +1,59 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-
+    <h2>The Event is {{ event.eventStatus.label }}</h2>
     <h2>Details of {{ event.name }}</h2>
 
     <div>
-        <div>
-            <p>Name of the event : {{ event.name }}</p>
-            <p>Dates and hours of this one : {{ event.dateStartHour|date('d-w-Y H:i') }}
-                to {{ event.dateEndHour|date('d-w-Y H:i') }}</p>
-            <p>Registration deadline : {{ event.registrationDeadline|date('d-m-Y H:i') }}</p>
-            <p>Number of seats : {{ event.nbMaxRegistrations }}</p>
-            <p>Duration : {{ event.duration.format('%d days, %h hours, %m minutes') }}</p>
-            <p>Description : {{ event.infosEvent }}</p>
-            <p>Campus : {{ event.campus.name }}</p>
-            <p>Place : {{ event.eventLocation.name }}</p>
-            <p>Street : {{ event.eventLocation.street }}</p>
-            <p>Zipcode</p>
-            <p>Latitude : {{ event.eventLocation.latitude }}</p>
-            <p>Longitude : {{ event.eventLocation.longitude }}</p>
-            <img src="{{ asset('uploads/' ~ event.photo) }}" alt="{{ event.name }}">
-            {% for participant in event.participantList %}
-                <p>{{ loop.index }} : {{ participant.username }}</p>
-            {% endfor %}
+        {% if event.eventStatus.label|lower == "canceled" %}
+            <div>
+                <p>Status of the event : {{ event.eventStatus.label }}</p>
+                <p>Reason of cancellation: {{ event.infosEvent }}</p>
+                <p>Name of the event : {{ event.name }}</p>
+                <p>Place : {{ event.eventLocation.name }}</p>
+                <p>Street : {{ event.eventLocation.street }}</p>
+            </div>
 
-        </div>
-        <div>
-            <a href="{{ path('events_register', {'id': event.id}) }}">Register</a>
-            <a href="{{ path('events_unsubscribe', {'id': event.id}) }}">Unsubscribe</a>
-            <a href="{{ path('events_edit', {'id': event.id}) }}">Update</a>
-            <a onclick="return confirm('Do you really want to delete {{ event.name }} ?')"
-               href="{{ path('events_delete', {'id': event.id}) }}">Delete</a>
-        </div>
+        {% else %}
+            <div>
+                <p>Name of the event : {{ event.name }}</p>
+                <p>Dates and hours of this one : {{ event.dateStartHour|date('d-m-Y H:i') }}
+                    to {{ event.dateEndHour|date('d-m-Y H:i') }}</p>
+                <p>Registration deadline : {{ event.registrationDeadline|date('d-m-Y H:i') }}</p>
+                <p>Number of participants : {{ event.nbMaxRegistrations }}</p>
+                <p>Duration : {{ event.duration.format('%d days, %h hours, %m minutes') }}</p>
+                <p>Description : {{ event.infosEvent }}</p>
+                <p>Campus : {{ event.campus.name }}</p>
+                <p>Place : {{ event.eventLocation.name }}</p>
+                <p>Street : {{ event.eventLocation.street }}</p>
+                <p>Zipcode : {{ event.eventLocation.city.zipCode }}</p>
+                <p>Latitude : {{ event.eventLocation.latitude }}</p>
+                <p>Longitude : {{ event.eventLocation.longitude }}</p>
+                <img src="{{ asset('uploads/' ~ event.photo) }}" alt="{{ event.name }}">
+
+                {% for participant in event.participantList %}
+                    <p>{{ loop.index }} : {{ participant.username }}</p>
+                {% endfor %}
+
+
+                <div>
+                {% if event.participantList|length < event.nbMaxRegistrations and event.eventStatus.label|lower =="open"  %}
+                    <a href="{{ path('events_register', {'id': event.id}) }}">Register</a>
+                {% else %}
+                    <h3>The event participant list is at full capacity. You cannot sign up for it :( </h3>
+                {% endif %}
+                {% if app.user.email == event.organizer.email %}
+                    <a href="{{ path('events_edit', {'id': event.id}) }}">Update</a>
+                    <a onclick="return confirm('Do you really want to delete {{ event.name }} ?')"
+                       href="{{ path('events_delete', {'id': event.id}) }}">Delete</a>
+                {% endif%}
+                {% if app.user in event.participantList and date('now')< event.registrationDeadline %}
+                    <a href="{{ path('events_unsubscribe', {'id': event.id}) }}">Unsubscribe</a>
+                {% endif %}
+                </div>
+
+            </div>
+        {% endif %}
     </div>
 
 {% endblock %}
-

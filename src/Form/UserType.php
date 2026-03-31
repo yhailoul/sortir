@@ -6,16 +6,21 @@ use App\Entity\Campus;
 use App\Entity\User;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
 
 // ✅ contrainte de validation
 use Symfony\Component\Validator\Constraints\Image;
+use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
 
 class UserType extends AbstractType
 {
@@ -25,26 +30,40 @@ class UserType extends AbstractType
             ->add('username', options: [
                 'constraints' => [
                     new NotBlank(message: 'Username is required.'),
-                ],
-            ])
+                ], TextType::class,
+            ['label' => "Username",
+            'attr' => [
+                'placeholder' =>'enter a username']
+            , ]])
             ->add('firstName', options: [
                 'constraints' => [
                     new NotBlank(message: 'Firstname is required.'),
-                ],
-            ])
+                ],TextType::class,[
+                'label' => "Firstname",
+                'attr' => [
+                'placeholder' =>'enter  firstname',]
+            ]])
             ->add('lastName', options: [
                 'constraints' => [
                     new NotBlank(message: 'Lastname is required.'),
-                ],
-            ])
+                ], TextType::class,[
+                'label' => "Lastname",
+                'attr' => [
+                'placeholder' =>'enter  lastname',]
+            ]])
             ->add('phone', options: [
                 'required' => false,
-            ])
+             NumberType::class,[
+                'label' => "Phone",
+                'attr' => ['placeholder' =>'enter phone number',]
+            ]])
             ->add('email', options: [
                 'constraints' => [
                     new NotBlank(message: 'Email is required.'),
-                ],
-            ])
+                ], EmailType::class,[
+                'label' => "Email",
+                'attr' => ['placeholder' =>'enter email',]
+            ]])
             ->add('campus', EntityType::class, [
                 'class' => Campus::class,
                 'choice_label' => 'name',
@@ -65,6 +84,18 @@ class UserType extends AbstractType
                     ],
                 ],
                 'second_options' => ['label' => 'Repeat Password'],
+                'constraints' => [
+                    new NotBlank(message: 'Please enter a password'),
+                    new Length(
+                        min: 8,
+                        max: 4096,
+                        minMessage: 'The password must be at least 8 characters long'
+                    ),
+                    new Regex(pattern: '/^(?=.*[a-z])/', message: 'Your password must contain at least one lowercase letter'),
+                    new Regex(pattern: '/^(?=.*[A-Z])/', message: 'Your password must contain at least one uppercase letter'),
+                    new Regex(pattern: '/^(?=.*\d)/', message: 'Your password must contain at least one number'),
+                    new Regex(pattern: '/^(?=.*[@$!%*?&])/', message: 'Your password must contain at least one special character (@$!%*?&)'),
+                ]
             ])
             ->add('photo', FileType::class, [
                 'label' => 'Profile Picture',

@@ -1,11 +1,18 @@
 {% extends 'base.html.twig' %}
-
+{% block main_class %}h-full{% endblock %}
 {% block title %}Log in!{% endblock %}
-
+{% block header %}
+{% endblock %}
 {% block body %}
-    <div class="min-h-full w-full bg-[#F8F7FB] flex items-center justify-center p-4">
+    <div class="min-h-screen w-full bg-[#F8F7FB] flex items-center justify-center p-4 relative overflow-hidden">
 
-        <div class="bg-white w-full max-w-md rounded-xl shadow-lg relative overflow-hidden p-8">
+        <div
+            class="absolute top-[0%] right-[10%] w-[500px] h-[600px] bg-[#7349F3]/20 rounded-[50%] blur-[50px] pointer-events-none"></div>
+
+        <div
+            class="absolute bottom-[-10%] right-[10%] w-[600px] h-[500px] bg-cyan-300/30 rounded-[50%] blur-[50px] pointer-events-none"></div>
+
+        <div class="bg-white w-full max-w-md rounded-xl shadow-lg relative z-10 overflow-hidden p-8 md:py-24">
 
             <div
                 class="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-violet-100/100 to-transparent pointer-events-none"></div>
@@ -13,7 +20,7 @@
             <div class="relative z-10">
                 <form method="post">
                     {% if error %}
-                        <div class="alert alert-danger mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+                        <div class="alert alert-danger mb-4 p-3 bg-red-100 text-red-700 rounded-lg" role="alert">
                             {{ error.messageKey|trans(error.messageData, 'security') }}
                         </div>
                     {% endif %}
@@ -30,7 +37,7 @@
                             <svg class="w-12 h-12" id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg"
                                  viewBox="0 0 108.89 108.89">
                                 <path fill="#7349F3"
-                                      d="M96.54,42.62c-4.9,0-11.1.56-17.25,1.54,5.03-3.65,9.82-7.64,13.28-11.11,10.67-10.66,4.82-12.31.21-16.93-4.62-4.62-6.27-10.46-16.94.2-3.46,3.47-7.46,8.25-11.11,13.29.98-6.15,1.54-12.34,1.54-17.25C66.28-2.72,60.98.23,54.45.23s-11.83-2.96-11.83,12.13c0,4.9.56,11.1,1.54,17.25-3.65-5.04-7.64-9.82-11.1-13.29-10.67-10.66-12.31-4.82-16.93-.2-4.62,4.62-10.46,6.27.2,16.93,3.46,3.47,8.25,7.46,13.28,11.11-6.14-.98-12.34-1.54-17.25-1.54C-2.73,42.62.24,47.91.24,54.45s-2.96,11.83,12.12,11.83c4.9,0,11.11-.56,17.25-1.54-5.03,3.65-9.82,7.64-13.28,11.11-10.66,10.66-4.82,12.31-.2,16.93,4.62,4.62,6.27,10.46,16.93-.21,3.46-3.46,7.46-8.24,11.1-13.28-.98,6.15-1.54,12.34-1.54,17.25,0,15.08,5.3,12.12,11.83,12.12s11.83,2.96,11.83-12.12c0-4.9-.56-11.1-1.54-17.25,3.65,5.04,7.64,9.82,11.11,13.28,10.67,10.67,12.32,4.83,16.94.21,4.61-4.62,10.46-6.27-.21-16.93-3.46-3.47-8.25-7.46-13.28-11.11,6.14.98,12.34,1.54,17.25,1.54,15.08,0,12.12-5.3,12.12-11.83s2.96-11.83-12.12-11.83ZM79.64,55.25c-17.96,2.77-21.62-7.22-24.38,10.73-.14.93-1.48.93-1.62,0-2.76-17.95-6.42-7.96-24.38-10.73-.92-.14-.92-1.47,0-1.62,17.96-2.76,21.62-6.43,24.38-24.37.14-.93,1.48-.93,1.62,0,2.76,17.95,6.43,21.61,24.38,24.37.92.15.92,1.48,0,1.62Z"/>
+                                      d="M96.54,42.62c-4.9,0-11.1.56-17.25,1.54,5.03-3.65,9.82-7.64,13.28-11.11,10.67-10.66,4.82-12.31.21-16.93-4.62-4.62-6.27-10.46-16.94.2-3.46,3.47-7.46,8.25-11.11,13.29.98-6.15,1.54-12.34,1.54-17.25C66.28-2.72,60.98.23,54.45.23s-11.83-2.96-11.83,12.13c0,4.9.56,11.1,1.54,17.25-3.65-5.04-7.64-9.82-11.1-13.29-10.67-10.66-12.31-4.82-16.93-.2-4.62,4.62-10.46,6.27.2,16.93,3.46,3.47,8.25,7.46,13.28,11.11-6.14-.98-12.34-1.54-17.25-1.54C-2.73,42.62.24,47.91.24,54.45s-2.96,11.83,12.12,11.83c4.9,0,11.11-.56,17.25-1.54-5.03,3.65-9.82,7.64-13.28,11.11-10.66,10.66-4.82,12.31-.2,16.93,4.62,4.62,6.27,10.46,16.93-.21,3.46-3.46,7.46-8.24,11.1-13.28-.98,6.15-1.54,12.34-1.54,17.25,0,15.08,5.3,12.12,11.83,12.12s11.83,2.96,11.83-12.12c0-4.9-.56-11.1-1.54-17.25,3.65,5.04,7.64,9.82,11.11,13.28,10.67,10.67,12.32,4.83,16.94.21,4.61-4.62,10.46-6.27-.21-16.93-3.46-3.47-8.25-7.46-13.28-11.11,6.14.98,12.34,1.54,17.25,1.54,15.08,0,12.12-5.3,12.12-11.83s2.96-11.83-12.12-11.83ZM79.64,55.25c-17.96,2.77-21.62-7.22-24.38,10.73-.14.93-1.48.93-1.62,0-2.76-17.95-6.42-7.96-24.38-10.73-.92-.14-.92-1.47,0-1.62,17.96-2.76,21.62-6.43,24.38-24.37.14-.93,1.48-.93,1.62,0,2.76,17.95,6.43,21.61,24.38,24.37.92.15.92,1.48,0,1.62Z"></path>
                             </svg>
                         </div>
                         <h1 class="font-bold text-2xl text-slate-800">Welcome Back</h1>
@@ -42,24 +49,31 @@
                             <label for="inputEmail" class="block text-sm font-medium text-slate-700 mb-1">Email
                                 address*</label>
                             <input type="text" value="{{ last_username }}" name="email" id="inputEmail"
-                                       class="w-full border border-slate-300 p-2 rounded-lg focus:ring-2 focus:ring-violet-500 outline-none transition-all"
-                                   autocomplete="email" required autofocus placeholder="Enter your email address">
+                                   class="w-full border border-slate-300 p-2 rounded-lg focus:ring-2 focus:ring-violet-500 outline-none transition-all"
+                                   autocomplete="username" required autofocus placeholder="Enter your email address">
                         </div>
 
                         <div>
                             <label for="inputPassword"
                                    class="block text-sm font-medium text-slate-700 mb-1">Password*</label>
-                            <input type="password" name="password" id="inputPassword"
-                                   class="w-full border border-slate-300 p-2 rounded-lg focus:ring-2 focus:ring-violet-500 outline-none transition-all"
-                                   autocomplete="current-password" required placeholder="******">
+                            <div class="relative">
+                                <input type="password" name="password" id="inputPassword"
+                                       class="w-full border border-slate-300 p-2 pr-10 rounded-lg focus:ring-2 focus:ring-violet-500 outline-none transition-all"
+                                       autocomplete="current-password" required placeholder="******">
+                                <button type="button" onclick="togglePassword()"
+                                        class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                                        aria-label="Afficher le mot de passe">
+                                    <i id="eye-icon" class="fa-solid fa-eye-slash"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
                         <div class="flex items-center justify-between text-sm">
-                            <label class="flex items-center gap-2 cursor-pointer text-slate-600">
+                            <label for="remember_me" class="flex items-center gap-2 cursor-pointer text-slate-600">
                                 <input type="checkbox" name="_remember_me"
-                                       class="rounded text-violet-600 focus:ring-violet-500">
+                                       class="rounded text-violet-600 focus:ring-violet-500" id="remember_me">
                                 Remember me
                             </label>
                             <a href="{{ path('app_forgot_password_request') }}"
@@ -67,7 +81,7 @@
                         </div>
 
                         <button
-                            class="w-full bg-[#7349F3] hover:bg-[#6239e2] text-white font-semibold py-3 rounded-lg shadow-md transition-colors mt-2"
+                            class="w-full bg-[#7349F3] hover:bg-[#6239e2] text-white font-semibold py-3 rounded-lg shadow-md transition-colors mt-2 cursor-pointer"
                             type="submit">
                             Sign in
                         </button>
@@ -76,4 +90,17 @@
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function togglePassword() {
+            const input = document.getElementById('inputPassword');
+            const icon = document.getElementById('eye-icon');
+            input.type = input.type === 'password' ? 'text' : 'password';
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
+        }
+    </script>
 {% endblock %}
