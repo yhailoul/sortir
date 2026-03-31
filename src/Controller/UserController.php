@@ -16,11 +16,12 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/user')]
 final class UserController extends AbstractController
 {
-    public function __construct(private readonly UserCsvImporter $userCsvImporter)
+    public function __construct(private readonly UserCsvImporter $userCsvImporter, private readonly ValidatorInterface $validator)
     {
     }
 
@@ -34,7 +35,7 @@ final class UserController extends AbstractController
     }
 
     #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
-    #[isGranted('ROLE_ADMIN')]
+    #[IsGranted('ROLE_ADMIN')]
     public function new(Request                     $request,
                         EntityManagerInterface      $entityManager,
                         UserPasswordHasherInterface $userPasswordHasher,
@@ -42,43 +43,58 @@ final class UserController extends AbstractController
                         AvatarService               $defaultAvatar,
                         UserCsvImporter             $csvImporter): Response
     {
+        // --- Formulaire pour création manuelle ---
         $user = new User();
-        $form = $this->createForm(UserType::class, $user);
-        $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $formDataPassword = $form->getData()->getPassword();
-            dump($form->getData());
-            //dd($formDataPassword);
-            $plainPassword = $form->get('password')->getData();
-            //dd($plainPassword);
-            $user->setRoles(['ROLE_USER']);
-            $user->setActive(true);
-            $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
-            $this->handleFileUploads($user, $form, $fileUploader);
+        $uploadedFiles = $request->files->get('user');
+        $hasCsv = !empty($uploadedFiles['csvFile']);
 
-// Bout de code de référence à adapter.
-//            $file   = $form->get('csvFile')->getData();
-//            $result = $this->userCsvImporter->import($file->getPathname());
-//            $this->addFlash('success', "{$result['created']} utilisateurs créés.");
-//            foreach ($result['errors'] as $error) {
-//                $this->addFlash('warning', $error);
-//            }
-//            return $this->redirectToRoute('admin_users_import');
+        $validationGroups = $hasCsv
+            ? ['Default']                       // CSV : on valide uniquement le champ csvFile
+            : ['Default', 'manual_creation'];   // Manuel : on valide tous les champs
 
+        $userForm = $this->createForm(UserType::class, $user);
+        $userForm->handleRequest($request);
 
-            $defaultAvatar->correctionPhotoProfile($user);
+        if ($userForm->isSubmitted()) {
 
-            $entityManager->persist($user);
-            $entityManager->flush();
-            //dd($plainPassword);
-            return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+            $csvFile = $userForm->get('csvFile')->getData();
 
+            if ($csvFile) {
+                $csvViolations = $this->validator->validate(
+                    $csvFile,
+                    new \Symfony\Component\Validator\Constraints\File(
+                        mimeTypes: ['text/csv', 'text/plain', 'application/csv', 'application/excel', 'application/vnd.msexcel'],
+                        mimeTypesMessage: 'The file must be a CSV file.',
+                    )
+                );
+
+                if ($csvViolations->count() === 0) {
+                    $result = $csvImporter->import($csvFile->getPathname());
+                    $this->addFlash('success', "{$result['created']} Users imported successfully.");
+                    foreach ($result['errors'] as $error) {
+                        $this->addFlash('warning', $error);
+                    }
+                    return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+                }
+
+            } else if ($userForm->isValid()) {
+                $plainPassword = $userForm->get('password')->getData();
+                $user->setRoles(['ROLE_USER']);
+                $user->setActive(true);
+                $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
+                $this->handleFileUploads($user, $userForm, $fileUploader);
+                $defaultAvatar->correctionPhotoProfile($user);
+                $entityManager->persist($user);
+                $entityManager->flush();
+                $this->addFlash('success', 'User created successfully.');
+                return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+            }
         }
 
         return $this->render('user/new.html.twig', [
             'user' => $user,
-            'form' => $form,
+            'form' => $userForm,
         ]);
     }
 
