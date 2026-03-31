@@ -164,11 +164,22 @@
                                     </div>
 
                                     <div class="flex gap-2">
-                                        <a href="{{ path('events_detail', {'id': event.id}) }}"
-                                           class="flex-1 text-center bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold py-2 rounded-xl transition-colors">
-                                            Show
-                                        </a>
-                                        {% if app.user == event.organizer and event.registrationDeadline > date('now') %}
+                                        {% if event.eventStatus.label != 'In creation' %}
+                                            <a href="{{ path('events_detail', {'id': event.id}) }}"
+                                               class="flex-1 text-center bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold py-2 rounded-xl transition-colors">
+                                                Show
+                                            </a>
+                                        {% endif %}
+                                        {% if app.user == event.organizer and event.eventStatus.label == 'In creation' %}
+                                            <a href="{{ path('events_edit', {'id': event.id}) }}"
+                                               class="flex-1 text-center bg-amber-100 hover:bg-amber-200 text-amber-700 text-sm font-semibold py-2 rounded-xl transition-colors">
+                                                Edit
+                                            </a>
+                                            <a href="{{ path('events_create', {'id': event.id}) }}"
+                                               class="flex-1 text-center bg-green-100 hover:bg-green-200 text-green-700 text-sm font-semibold py-2 rounded-xl transition-colors">
+                                                Publish
+                                            </a>
+                                        {% elseif app.user == event.organizer and event.registrationDeadline > date('now') and event.eventStatus.label != 'Canceled' %}
                                             <a href="{{ path('events_cancelled', {'id': event.id}) }}"
                                                class="flex-1 text-center bg-amber-100 hover:bg-amber-200 text-amber-700 text-sm font-semibold py-2 rounded-xl transition-colors">
                                                 Cancel Event
