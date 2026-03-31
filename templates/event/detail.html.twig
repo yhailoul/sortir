@@ -32,6 +32,8 @@
                 {% for participant in event.participantList %}
                     <p>{{ loop.index }} : {{ participant.username }}</p>
                 {% endfor %}
+
+               {% if event.participantList|length < event.nbMaxRegistrations and event.eventStatus.label|lower =="open"  %}
                 <div>
                     <a href="{{ path('events_register', {'id': event.id}) }}">Register</a>
                     <a href="{{ path('events_unsubscribe', {'id': event.id}) }}">Unsubscribe</a>
@@ -39,6 +41,7 @@
                     <a onclick="return confirm('Do you really want to delete {{ event.name }} ?')"
                        href="{{ path('events_delete', {'id': event.id}) }}">Delete</a>
                 </div>
+               {% endif %}
             </div>
         {% endif %}
     </div>
