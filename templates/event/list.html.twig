@@ -2,35 +2,98 @@
 {% block title %}
     event List
 {% endblock %}
-
+{% block main_class %}pt-40{% endblock %}
 {% block body %}
-    {#    ************** #}
-    {# Titre principal #}
-    <div class="text-center font-geist">
-    <h1 class="text-7xl font-[750] tracking-[-3.6px]">Unite Campuses, <br>Connect
-        <span
-            class="text-7xl font-bold bg-gradient-to-r from-[#4F46E5] via-[#9333EA] to-[#E11D48] bg-clip-text text-transparent relative z-10">
-        People
-    </span>
-    </h1>
-    <h2>Join your school's events, meet learners from all backgrounds, <br> and turn your studies into a collective adventure.</h2>
-    </div>
-    {#    ************** #}
+    <div>
+        <div
+            class="absolute top-[0%] right-[10%] w-[500px] h-[600px] bg-[#7349F3]/20 rounded-[50%] blur-[50px] pointer-events-none"></div>
 
-
-    <div class="containerSignedInUser">
-        <h3>Date du jour: {{ 'now' | date('d/m/Y H:i') }}</h3>
-        <h3>Participant: {{ app.user.firstname }} {{ app.user.lastname }}</h3>
-    </div>
-    <div class="content">
-        <h2>event List</h2>
-        <div class="searchBar">
-            {{form_start(filterForm) }}
-            {{ form_widget(filterForm) }}
-            <button>Search</button>
-            {{ form_end(filterForm) }}
+        <div
+            class="absolute bottom-[-10%] right-[10%] w-[600px] h-[500px] bg-cyan-300/30 rounded-[50%] blur-[50px] pointer-events-none"></div>
+        {#    **************************************** #}
+        {# Titre principal #}
+        <div class="text-center font-geist">
+            {# tracking : letter spacing #}
+            <h1 class="text-7xl/24 font-[750] tracking-[-3.6px]">Unite Campuses, <br>Connect
+                <span
+                    class=" inline-block text-7xl font-bold bg-gradient-to-r from-[#4F46E5] via-[#9333EA] to-[#E11D48] bg-clip-text text-transparent relative z-10 -rotate-2">
+                    People
+            </span>
+            </h1>
+            <h2 class="leading-[2] mt-5">Join your school's events, meet learners from all backgrounds, <br> and turn
+                your
+                studies into a collective
+                adventure.</h2>
         </div>
-        <section>
+        {#    ************** #}
+
+
+        {#    <div class="containerSignedInUser"> #}
+        {#        <h3>Date du jour: {{ 'now' | date('d/m/Y H:i') }}</h3> #}
+        {#    </div> #}
+
+        {#    **************************************** #}
+        {#        BLOC DES FILTRES #}
+        <div class="content">
+            <div class="flex justify-center items-end relative z-10 mt-10 px-6">
+                {{ form_start(filterForm) }}
+                <div class="flex items-center justify-between gap-4">
+
+                    {# Select campus #}
+                    <div class="flex items-center gap-3 flex-wrap text-slate-600">
+                        {{ form_widget(filterForm.campus, {'attr': {'class': 'text-sm px-3 py-2 border border-slate-200 rounded-lg focus:border-violet-400 outline-none transition-all cursor-pointer bg-white'}}) }}
+                        {# ************ #}
+
+                        {# Date #}
+                        <div
+                            class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg bg-white text-sm text-slate-500">
+                            <i class="fa-regular fa-calendar text-xs"></i>
+                            {{ form_widget(filterForm.startDate, {'attr': {'class': 'outline-none border-none text-sm bg-transparent cursor-pointer w-32'}}) }}
+                            <span>→</span>
+                            {{ form_widget(filterForm.endDate, {'attr': {'class': 'outline-none border-none text-sm bg-transparent cursor-pointer w-32'}}) }}
+                        </div>
+                        {# ************** #}
+
+                        {# Pilule #}
+                        <label
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white cursor-pointer text-sm font-medium text-slate-600 hover:border-violet-300 hover:text-violet-600 transition-colors has-[:checked]:bg-violet-100 has-[:checked]:border-violet-400 has-[:checked]:text-violet-600">
+                            {{ form_widget(filterForm.organized, {'attr': {'class': 'sr-only'}}) }}
+                            <i class="fa-solid fa-sliders text-xs"></i>
+                            Organized
+                        </label>
+                        <label
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white cursor-pointer text-sm font-medium text-slate-600 hover:border-violet-300 hover:text-violet-600 transition-colors has-[:checked]:bg-violet-100 has-[:checked]:border-violet-400 has-[:checked]:text-violet-600">
+                            {{ form_widget(filterForm.signedUp, {'attr': {'class': 'sr-only'}}) }}
+                            <i class="fa-solid fa-user-plus text-xs"></i>
+                            Signed Up
+                        </label>
+                        <label
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white cursor-pointer text-sm font-medium text-slate-600 hover:border-violet-300 hover:text-violet-600 transition-colors has-[:checked]:bg-violet-100 has-[:checked]:border-violet-400 has-[:checked]:text-violet-600">
+                            {{ form_widget(filterForm.passed, {'attr': {'class': 'sr-only'}}) }}
+                            <i class="fa-solid fa-circle-xmark text-xs"></i>
+                            Passed
+                        </label>
+                        {# ************** #}
+                    </div>
+
+                    {# Barre de recherche #}
+                    <div class="flex items-center gap-2 shrink-0">
+                        <div class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg bg-white">
+                            <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs"></i>
+                            {{ form_widget(filterForm.searchTerm, {'attr': {'class': 'outline-none border-none text-sm bg-transparent w-40 placeholder-slate-400', 'placeholder': 'Search here'}}) }}
+                        </div>
+                        <button
+                            class="flex items-center gap-2 bg-[#7349F3] hover:bg-[#6239e2] text-white text-sm font-semibold px-5 py-2 rounded-lg shadow-md transition-colors cursor-pointer whitespace-nowrap"
+                            type="submit">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                            Search
+                        </button>
+                    </div>
+                    {# *************** #}
+                </div>
+                {{ form_end(filterForm) }}
+            </div>
+            {#********************************** #}
 
             <div class="">
                 <table class="">
@@ -109,3 +172,5 @@
     </script>
 
 {% endblock %}
+
+
