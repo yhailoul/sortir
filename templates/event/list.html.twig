@@ -168,17 +168,16 @@
                                            class="flex-1 text-center bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold py-2 rounded-xl transition-colors">
                                             Show
                                         </a>
-
-                                        {% if app.user in event.participantList %}
+                                        {% if app.user == event.organizer and event.registrationDeadline > date('now') %}
+                                            <a href="{{ path('events_cancelled', {'id': event.id}) }}"
+                                               class="flex-1 text-center bg-amber-100 hover:bg-amber-200 text-amber-700 text-sm font-semibold py-2 rounded-xl transition-colors">
+                                                Cancel Event
+                                            </a>
+                                        {% elseif app.user in event.participantList %}
                                             <a href="{{ path('events_unsubscribe', {'id': event.id}) }}"
                                                onclick="return confirm('Se désister ?')"
                                                class="flex-1 text-center bg-red-100 hover:bg-red-200 text-red-600 text-sm font-semibold py-2 rounded-xl transition-colors">
                                                 Unsubscribe
-                                            </a>
-                                        {% elseif app.user == event.organizer and event.registrationDeadline > date('now') %}
-                                            <a href="{{ path('events_edit', {'id': event.id}) }}"
-                                               class="flex-1 text-center bg-amber-100 hover:bg-amber-200 text-amber-700 text-sm font-semibold py-2 rounded-xl transition-colors">
-                                                Edit
                                             </a>
                                         {% endif %}
                                     </div>
