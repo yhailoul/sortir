@@ -15,8 +15,6 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
-
-// ✅ contrainte de validation
 use Symfony\Component\Validator\Constraints\Image;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -27,43 +25,51 @@ class UserType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('username', options: [
+            ->add('username', TextType::class, [
+                'label' => 'Username',
+                'attr' => [
+                    'placeholder' => 'enter a username',
+                    'maxlength' => 180,
+                    'pattern' => '.{3,}',
+                ],
                 'constraints' => [
                     new NotBlank(message: 'Username is required.'),
-                ], TextType::class,
-            ['label' => "Username",
-            'attr' => [
-                'placeholder' =>'enter a username']
-            , ]])
-            ->add('firstName', options: [
+                ],
+            ])
+            ->add('firstName', TextType::class, [
+                'label' => 'Firstname',
+                'attr' => [
+                    'placeholder' => 'enter firstname',
+                ],
                 'constraints' => [
                     new NotBlank(message: 'Firstname is required.'),
-                ],TextType::class,[
-                'label' => "Firstname",
+                ],
+            ])
+            ->add('lastName', TextType::class, [
+                'label' => 'Lastname',
                 'attr' => [
-                'placeholder' =>'enter  firstname',]
-            ]])
-            ->add('lastName', options: [
+                    'placeholder' => 'enter lastname',
+                ],
                 'constraints' => [
                     new NotBlank(message: 'Lastname is required.'),
-                ], TextType::class,[
-                'label' => "Lastname",
-                'attr' => [
-                'placeholder' =>'enter  lastname',]
-            ]])
-            ->add('phone', options: [
+                ],
+            ])
+            ->add('phone', NumberType::class, [
+                'label' => 'Phone',
                 'required' => false,
-             NumberType::class,[
-                'label' => "Phone",
-                'attr' => ['placeholder' =>'enter phone number',]
-            ]])
-            ->add('email', options: [
+                'attr' => [
+                    'placeholder' => 'enter phone number',
+                ],
+            ])
+            ->add('email', EmailType::class, [
+                'label' => 'Email',
+                'attr' => [
+                    'placeholder' => 'enter email',
+                ],
                 'constraints' => [
                     new NotBlank(message: 'Email is required.'),
-                ], EmailType::class,[
-                'label' => "Email",
-                'attr' => ['placeholder' =>'enter email',]
-            ]])
+                ],
+            ])
             ->add('campus', EntityType::class, [
                 'class' => Campus::class,
                 'choice_label' => 'name',
@@ -95,14 +101,14 @@ class UserType extends AbstractType
                     new Regex(pattern: '/^(?=.*[A-Z])/', message: 'Your password must contain at least one uppercase letter'),
                     new Regex(pattern: '/^(?=.*\d)/', message: 'Your password must contain at least one number'),
                     new Regex(pattern: '/^(?=.*[@$!%*?&])/', message: 'Your password must contain at least one special character (@$!%*?&)'),
-                ]
+                ],
             ])
             ->add('photo', FileType::class, [
                 'label' => 'Profile Picture',
                 'mapped' => false,
                 'required' => false,
                 'constraints' => [
-                     new Image(
+                    new Image(
                         maxSize: '1M',
                         mimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
                         maxSizeMessage: 'Maximum file size allowed is 1MB',
