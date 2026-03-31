@@ -13,7 +13,7 @@
                 <th>Username</th>
                 <th>Roles</th>
                 <th>Activity Status</th>
-                <th>actions</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -26,13 +26,15 @@
                 <td>{{ user.active}}</td>
                 <td>
                     <a href="{{ path('app_user_show', {'id': user.id}) }}">show</a>
+
                     {% if user.active == true and is_granted('ROLE_ADMIN') %}
                         <a onclick="confirm('Do you really want to DEACTIVATE user: {{ user.username }} ?')" href="{{ path('app_user_deactivate_admin', {'id': user.id}) }}">Deactivate User</a>
                     {% elseif user.active == false and is_granted('ROLE_ADMIN') %}
                             <a onclick="confirm('Do you really want to ACTIVATE user: {{ user.username }} ?')" href="{{ path('app_user_activate_admin', {'id': user.id}) }}">Activate User</a>
                     {% endif %}
+                    {% if is_granted("ROLE_ADMIN") %}
                     <a onclick="confirm('Do you really want to DELETE user: {{ user.username }} PERMANENTLY?')" href="{{ path('app_user_delete', { 'id':user.id }) }}">Delete User</a>
-
+                    {% endif %}
                 </td>
             </tr>
         {% else %}
@@ -43,6 +45,6 @@
         </tbody>
     </table>
     {% if is_granted('ROLE_ADMIN') and is_granted('ROLE_USER') %}
-    <a href="{{ path('app_user_new') }}">Create new</a>
+    <a href="{{ path('app_user_new') }}">Create new User </a>
     {% endif %}
 {% endblock %}

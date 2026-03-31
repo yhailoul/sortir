@@ -24,12 +24,12 @@ class Location
     #[Assert\NotBlank]
     private ?string $street = null;
 
-    #[ORM\Column(length: 255)]
-    #[Assert\NotBlank]
+    #[ORM\Column(length: 255, nullable: true) ]
+
     private ?string $latitude = null;
 
-    #[ORM\Column(length: 255)]
-    #[Assert\NotBlank]
+    #[ORM\Column(length: 255, nullable: true) ]
+
     private ?string $longitude = null;
 
     /**
@@ -43,16 +43,23 @@ class Location
     private ?City $city;
 
 
+//    public function removeCity(City $city): static
+//    {
+//        $this->city= null;
+//                return $this;
+//    }
     public function __construct()
     {
-        $this->events = new ArrayCollection();
-
     }
-
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function setId(?int $id): void
+    {
+        $this->id = $id;
     }
 
     public function getName(): ?string
@@ -60,11 +67,9 @@ class Location
         return $this->name;
     }
 
-    public function setName(string $name): static
+    public function setName(?string $name): void
     {
         $this->name = $name;
-
-        return $this;
     }
 
     public function getStreet(): ?string
@@ -72,11 +77,9 @@ class Location
         return $this->street;
     }
 
-    public function setStreet(string $street): static
+    public function setStreet(?string $street): void
     {
         $this->street = $street;
-
-        return $this;
     }
 
     public function getLatitude(): ?string
@@ -84,11 +87,9 @@ class Location
         return $this->latitude;
     }
 
-    public function setLatitude(string $latitude): static
+    public function setLatitude(?string $latitude): void
     {
         $this->latitude = $latitude;
-
-        return $this;
     }
 
     public function getLongitude(): ?string
@@ -96,58 +97,29 @@ class Location
         return $this->longitude;
     }
 
-    public function setLongitude(string $longitude): static
+    public function setLongitude(?string $longitude): void
     {
         $this->longitude = $longitude;
-
-        return $this;
     }
 
-    /**
-     * @return Collection<int, Event>
-     */
     public function getEvents(): Collection
     {
         return $this->events;
     }
 
-    public function addEvent(Event $event): static
+    public function setEvents(Collection $events): void
     {
-        if (!$this->events->contains($event)) {
-            $this->events->add($event);
-            $event->setEventLocation($this);
-        }
-
-        return $this;
+        $this->events = $events;
     }
 
-    public function removeEvent(Event $event): static
-    {
-        if ($this->events->removeElement($event)) {
-            // set the owning side to null (unless already changed)
-            if ($event->getEventLocation() === $this) {
-                $event->setEventLocation(null);
-            }
-        }
-
-        return $this;
-    }
-
-    public function getCity(): City
+    public function getCity(): ?City
     {
         return $this->city;
     }
 
-    public function setCity(?City $city): static
+    public function setCity(?City $city): void
     {
-        $this->city= $city;
-        return $this;
+        $this->city = $city;
     }
-
-//    public function removeCity(City $city): static
-//    {
-//        $this->city= null;
-//                return $this;
-//    }
 
 }

@@ -2,81 +2,173 @@
 {% block title %}
     event List
 {% endblock %}
-
+{% block main_class %}pt-40{% endblock %}
 {% block body %}
-    <div class="containerSignedInUser">
-        <h3>Date du jour: {{ 'now' | date('d/m/Y H:i') }}</h3>
-        <h3>Participant: {{ app.user.firstname }} {{ app.user.lastname }}</h3>
-    </div>
-    <div class="content">
-        <h2>event List</h2>
-        <div class="searchBar">
-            {{form_start(filterForm) }}
-            {{ form_widget(filterForm) }}
-            <button>Search</button>
-            {{ form_end(filterForm) }}
+    <div>
+        <div
+            class="absolute top-[0%] right-[10%] w-[500px] h-[600px] bg-[#7349F3]/20 rounded-[50%] blur-[50px] pointer-events-none"></div>
+
+        <div
+            class="absolute bottom-[-10%] right-[10%] w-[600px] h-[500px] bg-cyan-300/30 rounded-[50%] blur-[50px] pointer-events-none"></div>
+        {#    **************************************** #}
+        {# Titre principal #}
+        <div class="text-center font-geist">
+            {# tracking : letter spacing #}
+            <h1 class="text-7xl/24 font-[750] tracking-[-3.6px]">Unite Campuses, <br>Connect
+                <span
+                    class=" inline-block text-7xl font-bold bg-gradient-to-r from-[#4F46E5] via-[#9333EA] to-[#E11D48] bg-clip-text text-transparent relative z-10 -rotate-2">
+                    People
+            </span>
+            </h1>
+            <h2 class="leading-[2] mt-5">Join your school's events, meet learners from all backgrounds, <br> and turn
+                your
+                studies into a collective
+                adventure.</h2>
         </div>
-        <section>
+        {#    ************** #}
+
+
+        {#    <div class="containerSignedInUser"> #}
+        {#        <h3>Date du jour: {{ 'now' | date('d/m/Y H:i') }}</h3> #}
+        {#    </div> #}
+
+        {#    **************************************** #}
+        {#        BLOC DES FILTRES #}
+        <div class="content">
+            <div class="flex justify-center items-end relative z-10 mt-10 px-6">
+                {{ form_start(filterForm) }}
+                <div class="flex items-center justify-between gap-4">
+
+                    {# Select campus #}
+                    <div class="flex items-center gap-3 flex-wrap text-slate-600">
+                        {{ form_widget(filterForm.campus, {'attr': {'class': 'text-sm px-3 py-2 border border-slate-200 rounded-lg focus:border-violet-400 outline-none transition-all cursor-pointer bg-white'}}) }}
+                        {# ************ #}
+
+                        {# Date #}
+                        <div
+                            class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg bg-white text-sm text-slate-500">
+                            <i class="fa-regular fa-calendar text-xs"></i>
+                            {{ form_widget(filterForm.startDate, {'attr': {'class': 'outline-none border-none text-sm bg-transparent cursor-pointer w-32'}}) }}
+                            <span>→</span>
+                            {{ form_widget(filterForm.endDate, {'attr': {'class': 'outline-none border-none text-sm bg-transparent cursor-pointer w-32'}}) }}
+                        </div>
+                        {# ************** #}
+
+                        {# Pilule #}
+                        <label
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white cursor-pointer text-sm font-medium text-slate-600 hover:border-violet-300 hover:text-violet-600 transition-colors has-[:checked]:bg-violet-100 has-[:checked]:border-violet-400 has-[:checked]:text-violet-600">
+                            {{ form_widget(filterForm.organized, {'attr': {'class': 'sr-only'}}) }}
+                            <i class="fa-solid fa-sliders text-xs"></i>
+                            Organized
+                        </label>
+                        <label
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white cursor-pointer text-sm font-medium text-slate-600 hover:border-violet-300 hover:text-violet-600 transition-colors has-[:checked]:bg-violet-100 has-[:checked]:border-violet-400 has-[:checked]:text-violet-600">
+                            {{ form_widget(filterForm.signedUp, {'attr': {'class': 'sr-only'}}) }}
+                            <i class="fa-solid fa-user-plus text-xs"></i>
+                            Signed Up
+                        </label>
+                        <label
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white cursor-pointer text-sm font-medium text-slate-600 hover:border-violet-300 hover:text-violet-600 transition-colors has-[:checked]:bg-violet-100 has-[:checked]:border-violet-400 has-[:checked]:text-violet-600">
+                            {{ form_widget(filterForm.passed, {'attr': {'class': 'sr-only'}}) }}
+                            <i class="fa-solid fa-circle-xmark text-xs"></i>
+                            Passed
+                        </label>
+                        {# ************** #}
+                    </div>
+
+                    {# Barre de recherche #}
+                    <div class="flex items-center gap-2 shrink-0">
+                        <div class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg bg-white">
+                            <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs"></i>
+                            {{ form_widget(filterForm.searchTerm, {'attr': {'class': 'outline-none border-none text-sm bg-transparent w-40 placeholder-slate-400', 'placeholder': 'Search here'}}) }}
+                        </div>
+                        <button
+                            class="flex items-center gap-2 bg-[#7349F3] hover:bg-[#6239e2] text-white text-sm font-semibold px-5 py-2 rounded-lg shadow-md transition-colors cursor-pointer whitespace-nowrap"
+                            type="submit">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                            Search
+                        </button>
+                    </div>
+                    {# *************** #}
+                </div>
+                {{ form_end(filterForm) }}
+            </div>
+            {#********************************** #}
 
             <div class="">
                 <table class="">
                     <thead>
-                    <tr>Event title</tr>
-                    <tr>Date of the event</tr>
-                    <tr>Closing date</tr>
-                    <tr>Places Left</tr>
-                    <tr>Status</tr>
-                    <tr>Signed-up</tr>
-                    <tr>Organizer</tr>
-                    <tr>Actions</tr>
+                    <tr>
+                        <th>Event title</th>
+                        <th>Date of the event</th>
+                        <th>Closing date</th>
+                        <th>Places Left</th>
+                        <th>Status</th>
+                        <th>Signed-up</th>
+                        <th>Organizer</th>
+                        <th>Campus</th>
+                        <th>Actions</th>
+                    </tr>
                     </thead>
                     <tbody>
-                    {% for event in events %}
+
+                    {% set displayEvents = events is not empty ? events : eventAll %}
+
+                    {% if displayEvents is empty %}
                         <tr>
-                            <td>{{ event.name }}</td>
-                            <td>{{ event.dateStartHour|date('d/m/Y') }}</td>
-                            <td>{{ event.registrationDeadline|date('d/m/Y') }}</td>
-                            <td>{{ event.participantList|length }}/{{ event.nbMaxRegistrations }}</td>
-                            <td>{{ event.eventStatus.label }}</td>
-                            <td>
-                                {% if app.user in event.participantList or event.organizer  %}
-                                    <span>✓</span>
-                                {% endif %}
-                            </td>
-                            <td> <a href="{{ path('app_user_show', {'id':event.organizer.id}) }}">{{ event.organizer.username }}</a></td>
-                            <td>
-                                {% if app.user in event.participantList %}
-                                    <span><a href="{{ path('events_detail', {'id': event.id}) }}">Show</a></span>
-                                    <span><a id="unsubscribe"
-                                             onclick="return confirm('Are you sure you want to unsubscribe from this event?')"
-                                             href="{{ path('events_unsubscribe', {'id':event.id}) }}">Withdraw</a></span>
-                                {% elseif app.user in event.organizer and event.registrationDeadline > date('now') %}
-                                    <span><a href="{{ path('events_detail', {'id':event.id}) }}">Show</a></span>
-                                    <span><a href="{{ path('events_edit', {'id':event.id}) }}">Modify</a></span>
-                                {% else %}
-                                    <span><a href="{{ path('events_detail', {'id':event.id}) }}">Show</a></span>
-                                {% endif %}
-                            </td>
+                            <td colspan="8" style="text-align: center;">Aucun événement trouvé</td>
                         </tr>
-                    {% endfor %}
+                    {% else %}
+                        {% for event in displayEvents %}
+                            {% if event.eventStatus.label|lower != "historized" %}
+                            <tr>
+                                <td>{{ event.name }}</td>
+                                <td>{{ event.dateStartHour|date('d/m/Y') }}</td>
+                                <td>{{ event.registrationDeadline|date('d/m/Y') }}</td>
+                                <td>{{ event.participantList|length }}/{{ event.nbMaxRegistrations }}</td>
+
+                                <td>{{ event.eventStatus.label }}</td>
+
+                                <td>
+                                    {% if app.user in event.participantList or app.user == event.organizer %}
+                                        <span>✓</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if event.organizer %}
+                                        <a href="{{ path('app_user_show', {'id': event.organizer.id}) }}">{{ event.organizer.username }}</a>
+                                    {% else %}
+                                        <span class="text-muted">Organisateur supprimé</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ event.campus.name }}</td>
+                                <td>
+                                    {% if app.user in event.participantList %}
+                                        <span><a href="{{ path('events_detail', {'id': event.id}) }}">Show</a></span>
+
+                                        <span><a id="unsubscribe"
+                                                 onclick="return confirm('Are you sure you want to unsubscribe from this event?')"
+                                                 href="{{ path('events_unsubscribe', {'id': event.id}) }}">Withdraw</a></span>
+
+                                    {% elseif app.user == event.organizer and event.registrationDeadline > date('now') %}
+                                        <span><a href="{{ path('events_detail', {'id': event.id}) }}">Show</a></span>
+                                        <span><a href="{{ path('events_edit', {'id': event.id}) }}">Modify</a></span>
+                                    {% else %}
+                                        <span><a href="{{ path('events_detail', {'id': event.id}) }}">Show</a></span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
                     </tbody>
                 </table>
             </div>
             <br>
-               <p>tous les événements </p>
-                    {% for event in eventList %}
-                    <article>
-                        <p>{{ loop.index }} : {{ event.name }}</p>
-                        <a href="{{ path('events_register', {'id': event.id}) }}">Register</a>
-                        <a href="{{ path('events_unsubscribe', {'id': event.id}) }}">Unsubscribe</a>
-                   </article>
-                    {% endfor %}
-
         </section>
     </div>
 
     <script>
-
     </script>
 
 {% endblock %}

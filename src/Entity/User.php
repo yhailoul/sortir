@@ -72,7 +72,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Event>
      */
-    #[ORM\ManyToMany(targetEntity: Event::class, inversedBy: 'participantList')]
+    #[ORM\ManyToMany(targetEntity: Event::class, inversedBy: 'participantList') ]
     private Collection $eventInscription;
 
     #[ORM\ManyToOne(inversedBy: 'participant')]

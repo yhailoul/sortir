@@ -20,13 +20,17 @@ readonly class EventManager
     {
     }
 
-    public function createEvent(Event $event, User $user, ?UploadedFile $imageFile = null, string $action = 'save'): void
+    public function handleEvent(Event $event, User $user, ?UploadedFile $imageFile = null, string $action = 'save'): void
     {
 
-        $event->setOrganizer($user);
-        $event->setCampus($user->getCampus());
         $event->setDuration($event->getDateStartHour()->diff($event->getDateEndHour()));
-        $event->addParticipantList($user);
+
+        if (!$event->getId()) {
+            $event->setOrganizer($user);
+            $event->setCampus($user->getCampus());
+            $event->addParticipantList($user);
+        }
+
 
         if ($imageFile) {
             $oldPhoto = $event->getPhoto();

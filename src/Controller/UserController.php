@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+
 use App\Entity\User;
 use App\Form\UserType;
 use App\Repository\UserRepository;
@@ -20,6 +21,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class UserController extends AbstractController
 {
     #[Route(name: 'app_user_index', methods: ['GET'])]
+    #[isGranted('ROLE_ADMIN')]
     public function index(UserRepository $userRepository): Response
     {
         return $this->render('user/index.html.twig', [
@@ -41,11 +43,7 @@ final class UserController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $formDataPassword = $form->getData()->getPassword();
-            dump($form->getData());
-            //dd($formDataPassword);
             $plainPassword = $form->get('password')->getData();
-            //dd($plainPassword);
             $user->setRoles(['ROLE_USER']);
             $user->setActive(true);
             $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
@@ -54,7 +52,6 @@ final class UserController extends AbstractController
 
             $entityManager->persist($user);
             $entityManager->flush();
-            //dd($plainPassword);
             return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
 
         }
@@ -64,6 +61,7 @@ final class UserController extends AbstractController
             'form' => $form,
         ]);
     }
+
 
     #[Route('/{id}', name: 'app_user_show', methods: ['GET'])]
     public function show(
@@ -87,7 +85,6 @@ final class UserController extends AbstractController
     #[Route('/{id}/edit', name: 'app_user_edit', methods: ['GET', 'POST'])]
     public function edit(Request                     $request,
                          Security                    $security,
-                         User                        $user,
                          int                         $id,
                          UserRepository              $userRepository,
                          EntityManagerInterface      $entityManager,
@@ -127,12 +124,10 @@ final class UserController extends AbstractController
 
     #[Route('/{id}/activate/admin', name: 'app_user_activate_admin', methods: ['GET', 'POST'])]
     #[isGranted('ROLE_ADMIN')]
-    public function Activate(Request                $request,
-                             Security               $security,
-                             User                   $user,
-                             EntityManagerInterface $entityManager,
-                             UserRepository         $repository,
-                             int                    $id): Response
+    public function Activate(
+        EntityManagerInterface $entityManager,
+        UserRepository         $repository,
+        int                    $id): Response
     {
         $user = $repository->find($id);
         if (!$user) {
@@ -154,9 +149,7 @@ final class UserController extends AbstractController
 
     #[Route('/{id}/deactivate/admin', name: 'app_user_deactivate_admin', methods: ['GET', 'POST'])]
     #[isGranted('ROLE_ADMIN')]
-    public function Deactivate(Request                $request,
-                               Security               $security,
-                               User                   $user,
+    public function Deactivate(Security               $security,
                                EntityManagerInterface $entityManager,
                                UserRepository         $repository,
                                int                    $id): Response
@@ -183,12 +176,11 @@ final class UserController extends AbstractController
 
     #[Route('/delete/{id}', name: 'app_user_delete', methods: ['GET', 'POST'])]
     #[isGranted('ROLE_ADMIN')]
-    public function delete(Request                $request,
-                           User                   $user,
-                           int                    $id,
-                           UserRepository         $repository,
-                           Security               $security,
-                           EntityManagerInterface $entityManager): Response
+    public function delete(
+        int                    $id,
+        UserRepository         $repository,
+        Security               $security,
+        EntityManagerInterface $entityManager): Response
     {
         $user = $repository->find($id);
         $authUser = $security->getUser();

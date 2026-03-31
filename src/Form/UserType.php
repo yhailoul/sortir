@@ -6,23 +6,47 @@ use App\Entity\Campus;
 use App\Entity\User;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Image;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
 
 class UserType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('username')
-            ->add('firstName')
-            ->add('lastName')
-            ->add('phone')
-            ->add('email')
+            ->add('username',TextType::class,
+            ['label' => "Username",
+            'attr' => [
+                'placeholder' =>'enter a username']
+            ,])
+            ->add('firstName',TextType::class,[
+                'label' => "Firstname",
+                'attr' => [
+                'placeholder' =>'enter  firstname',]
+            ])
+            ->add('lastName',TextType::class,[
+                'label' => "Lastname",
+                'attr' => [
+                'placeholder' =>'enter  lastname',]
+            ])
+            ->add('phone',NumberType::class,[
+                'label' => "Phone",
+                'attr' => ['placeholder' =>'enter phone number',]
+            ])
+            ->add('email',EmailType::class,[
+                'label' => "Email",
+                'attr' => ['placeholder' =>'enter email',]
+            ])
             ->add('campus', EntityType::class, [
                 'class' => Campus::class,
                 'choice_label' => 'name',
@@ -37,6 +61,18 @@ class UserType extends AbstractType
                     'attr' => ['placeholder' => 'Leave blank to keep current password'],
                 ],
                 'second_options' => ['label' => 'Repeat Password'],
+                'constraints' => [
+                    new NotBlank(message: 'Please enter a password'),
+                    new Length(
+                        min: 8,
+                        max: 4096,
+                        minMessage: 'The password must be at least 8 characters long'
+                    ),
+                    new Regex(pattern: '/^(?=.*[a-z])/', message: 'Your password must contain at least one lowercase letter'),
+                    new Regex(pattern: '/^(?=.*[A-Z])/', message: 'Your password must contain at least one uppercase letter'),
+                    new Regex(pattern: '/^(?=.*\d)/', message: 'Your password must contain at least one number'),
+                    new Regex(pattern: '/^(?=.*[@$!%*?&])/', message: 'Your password must contain at least one special character (@$!%*?&)'),
+                ]
             ])
             ->add('photo', FileType::class, [
                 'label' => 'Profile Picture',

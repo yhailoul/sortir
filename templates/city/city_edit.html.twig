@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit City{% endblock %}
+
+{% block body %}
+    <h2>Edit City</h2>
+
+    <section>
+        {{ form_start(form) }}
+        {{ form_widget(form) }}
+        <button type="submit">Update City</button>
+        {{ form_end(form) }}
+    </section>
+
+{% endblock %}
