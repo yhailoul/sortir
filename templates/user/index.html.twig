@@ -45,6 +45,6 @@
         </tbody>
     </table>
     {% if is_granted('ROLE_ADMIN') and is_granted('ROLE_USER') %}
-    <a href="{{ path('app_user_new') }}">Create new</a>
+    <a href="{{ path('app_user_new') }}">Create new User </a>
     {% endif %}
 {% endblock %}

@@ -94,9 +94,9 @@ class EventController extends AbstractController
 
         if ($eventForm->isSubmitted() && $eventForm->isValid()) {
             $buttonClicked = $eventForm->getClickedButton();
-            $action = $buttonClicked->getName() ?? 'save'; // Renvoie save par défaut si null pour éviter l'erreur
+            $action = $buttonClicked?->getName() ?? 'save'; // Renvoie save par défaut si null pour éviter l'erreur
             $imageFile = $eventForm->get('eventPhoto')->getData();
-            $eventManager->createEvent($event, $this->getUser(), $imageFile, $action);
+            $eventManager->handleEvent($event, $this->getUser(), $imageFile, $action);
 
             $this->addFlash('success', 'Event created!');
 
@@ -153,7 +153,7 @@ class EventController extends AbstractController
             $buttonClicked = $eventForm->getClickedButton();
             $action = $buttonClicked->getName() ?? 'save'; // Renvoie save par défaut si null pour éviter l'erreur
             $imageFile = $eventForm->get('eventPhoto')->getData();
-            $eventManager->createEvent($event, $this->getUser(), $imageFile, $action);
+            $eventManager->handleEvent($event, $this->getUser(), $imageFile, $action);
             $this->addFlash('success', 'Event edited!');
 
             return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
@@ -205,6 +205,11 @@ class EventController extends AbstractController
     ): Response
     {
         $event = $eventRepository->find($id);
+
+        if (!$this->isGranted('EVENT_EDIT', $event)) {
+            $this->addFlash('danger', 'You do not have permission to delete this event.');
+            return $this->redirectToRoute('events_listFilters');
+        }
 
         if (!$event) {
             throw $this->createNotFoundException('There is not event with the id ' . $id);
