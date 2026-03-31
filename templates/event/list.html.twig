@@ -112,8 +112,8 @@
                     <p class="text-center col-span-full py-10">Aucun événement trouvé</p>
                 {% else %}
                     {% for event in displayEvents %}
-                        {% set currentClass = statusStyles[event.eventStatus.label] ?? 'bg-white text-black border-gray-300' %}
                         {% if event.eventStatus.label|lower != "historized" %}
+                            {% set currentClass = statusStyles[event.eventStatus.label] ?? 'bg-white text-black border-gray-300' %}
 
                             <div class="bg-white rounded-[2rem] p-5 shadow-sm flex flex-col gap-4">
 
@@ -127,8 +127,8 @@
                                             <h3 class="font-bold text-lg truncate">{{ event.name }}</h3>
                                             <span
                                                 class="{{ currentClass }} text-[10px] uppercase font-bold px-2 py-1 rounded-md shrink-0">
-                                    {{ event.eventStatus.label }}
-                                </span>
+                                                {{ event.eventStatus.label }}
+                                            </span>
                                         </div>
 
                                         <p class="text-slate-500 text-sm">
@@ -170,40 +170,50 @@
                                                 Show
                                             </a>
                                         {% endif %}
-                                        {% if app.user == event.organizer and event.eventStatus.label == 'In creation' %}
-                                            <a href="{{ path('events_edit', {'id': event.id}) }}"
-                                               class="flex-1 text-center bg-amber-100 hover:bg-amber-200 text-amber-700 text-sm font-semibold py-2 rounded-xl transition-colors">
-                                                Edit
-                                            </a>
-                                            <a href="{{ path('events_create', {'id': event.id}) }}"
-                                               class="flex-1 text-center bg-green-100 hover:bg-green-200 text-green-700 text-sm font-semibold py-2 rounded-xl transition-colors">
-                                                Publish
-                                            </a>
-                                        {% elseif app.user == event.organizer and event.registrationDeadline > date('now') and event.eventStatus.label != 'Canceled' %}
-                                            <a href="{{ path('events_cancelled', {'id': event.id}) }}"
-                                               class="flex-1 text-center bg-amber-100 hover:bg-amber-200 text-amber-700 text-sm font-semibold py-2 rounded-xl transition-colors">
-                                                Cancel Event
-                                            </a>
-                                        {% elseif app.user in event.participantList %}
-                                            <a href="{{ path('events_unsubscribe', {'id': event.id}) }}"
-                                               onclick="return confirm('Se désister ?')"
-                                               class="flex-1 text-center bg-red-100 hover:bg-red-200 text-red-600 text-sm font-semibold py-2 rounded-xl transition-colors">
-                                                Unsubscribe
-                                            </a>
+
+                                        {% if app.user == event.organizer %}
+                                            {% if event.eventStatus.label == 'In creation' %}
+                                                <a href="{{ path('events_edit', {'id': event.id}) }}"
+                                                   class="flex-1 text-center bg-amber-100 hover:bg-amber-200 text-amber-700 text-sm font-semibold py-2 rounded-xl transition-colors">
+                                                    Edit
+                                                </a>
+                                                <a href="{{ path('events_create', {'id': event.id}) }}"
+                                                   class="flex-1 text-center bg-green-100 hover:bg-green-200 text-green-700 text-sm font-semibold py-2 rounded-xl transition-colors">
+                                                    Publish
+                                                </a>
+                                            {% elseif event.registrationDeadline > date('now') and event.eventStatus.label != 'Canceled' %}
+                                                <a href="{{ path('events_cancelled', {'id': event.id}) }}"
+                                                   class="flex-1 text-center bg-amber-100 hover:bg-amber-200 text-amber-700 text-sm font-semibold py-2 rounded-xl transition-colors">
+                                                    Cancel Event
+                                                </a>
+                                            {% endif %}
+                                        {% elseif app.user %}
+                                            {% if app.user in event.participantList %}
+                                                {% if event.registrationDeadline > date('now') %}
+                                                    <a href="{{ path('events_unsubscribe', {'id': event.id}) }}"
+                                                       onclick="return confirm('Se désister ?')"
+                                                       class="flex-1 text-center bg-red-100 hover:bg-red-200 text-red-600 text-sm font-semibold py-2 rounded-xl transition-colors">
+                                                        Unsubscribe
+                                                    </a>
+                                                {% endif %}
+                                            {% else %}
+                                                {% if event.eventStatus.label == 'Open'
+                                                    and event.participantList|length < event.nbMaxRegistrations
+                                                    and event.registrationDeadline > date('now') %}
+                                                    <a href="{{ path('events_register', {'id': event.id}) }}"
+                                                       class="flex-1 text-center bg-green-100 hover:bg-green-200 text-green-700 text-sm font-semibold py-2 rounded-xl transition-colors">
+                                                        Subscribe
+                                                    </a>
+                                                {% endif %}
+                                            {% endif %}
                                         {% endif %}
                                     </div>
                                 </div>
                             </div>
-
                         {% endif %}
                     {% endfor %}
                 {% endif %}
             </div>
-
-            <script>
-            </script>
         </div>
     </div>
 {% endblock %}
-
-
