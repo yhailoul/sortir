@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\City;
 use App\Entity\User;
+use App\Form\FilterSearchType;
+use App\Form\Model\FilterSearch;
 use App\Form\UserType;
 use App\Form\VilleType;
 use App\Repository\CityRepository;
@@ -44,18 +46,13 @@ final class UserController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $formDataPassword = $form->getData()->getPassword();
-            dump($form->getData());
-            //dd($formDataPassword);
             $plainPassword = $form->get('password')->getData();
-            //dd($plainPassword);
             $user->setRoles(['ROLE_USER']);
             $user->setActive(true);
             $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
             $this->handleFileUploads($user, $form, $fileUploader);
             $entityManager->persist($user);
             $entityManager->flush();
-            //dd($plainPassword);
             return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
 
         }
@@ -65,40 +62,7 @@ final class UserController extends AbstractController
             'form' => $form,
         ]);
     }
-    #[Route('/city', name: 'app_user_cityList', methods: ['GET', 'POST'])]
-    #[IsGranted("ROLE_ADMIN")]
-    public function cityList(Request $request,CityRepository $cityRepository, EntityManagerInterface $entityManager): Response{
-        $city = new City();
-        $form = $this->createForm(VilleType::class, $city);
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($city);
-            $entityManager->flush();
-            return $this->redirectToRoute('app_user_cityList', [], Response::HTTP_SEE_OTHER);
-        }
-        $cities = $cityRepository->findAll();
-        return $this->render('user/cityList.html.twig', [
-            'cities' => $cities,
-            'newCityForm' => $form,
-        ]);
-    }
-    #[Route('/city/new-city', name: 'app_user_newCity', methods: ['GET', 'POST'])]
-    #[isGranted('ROLE_ADMIN')]
-    public function newCity(Request $request,
-                            EntityManagerInterface $entityManager): Response
-    {
-        $city = new City();
-        $form = $this->createForm(VilleType::class, $city);
-        $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-           // $formDataCity = $form->getData()->getCity();
-            $entityManager->persist($city);
-            $entityManager->flush();
-            $this->addFlash('success', 'City has been created.');
-            return $this->redirectToRoute('app_user_cityList', [], Response::HTTP_SEE_OTHER);
-        }return $this->render('user/cityList.html.twig', ['newCityForm'=>$form]);
-    }
 
     #[Route('/{id}', name: 'app_user_show', methods: ['GET'])]
     #[isGranted('ROLE_ADMIN')]
@@ -113,7 +77,6 @@ final class UserController extends AbstractController
 
     public function edit(Request $request,
                          Security $security,
-                         User $user,
                          int $id,
                          UserRepository $userRepository,
                          EntityManagerInterface $entityManager,
@@ -151,10 +114,7 @@ final class UserController extends AbstractController
     }
     #[Route('/{id}/activate/admin', name: 'app_user_activate_admin', methods: ['GET', 'POST'])]
     #[isGranted('ROLE_ADMIN')]
-    public function Activate(Request $request,
-                                         Security $security,
-                                         User $user,
-                                         EntityManagerInterface $entityManager,
+    public function Activate(EntityManagerInterface $entityManager,
                                          UserRepository $repository,
                                          int $id): Response
     {

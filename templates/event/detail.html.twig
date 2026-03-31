@@ -7,9 +7,11 @@
     <div>
         {% if event.eventStatus.label|lower == "canceled" %}
             <div>
-                <p>Name of the event : {{ event.name }}</p>
                 <p>Status of the event : {{ event.eventStatus.label }}</p>
                 <p>Reason of cancellation: {{ event.infosEvent }}</p>
+                <p>Name of the event : {{ event.name }}</p>
+                <p>Place : {{ event.eventLocation.name }}</p>
+                <p>Street : {{ event.eventLocation.street }}</p>
             </div>
 
         {% else %}
@@ -33,15 +35,23 @@
                     <p>{{ loop.index }} : {{ participant.username }}</p>
                 {% endfor %}
 
-               {% if event.participantList|length < event.nbMaxRegistrations and event.eventStatus.label|lower =="open"  %}
+
                 <div>
+                {% if event.participantList|length < event.nbMaxRegistrations and event.eventStatus.label|lower =="open"  %}
                     <a href="{{ path('events_register', {'id': event.id}) }}">Register</a>
-                    <a href="{{ path('events_unsubscribe', {'id': event.id}) }}">Unsubscribe</a>
+                {% else %}
+                    <h3>The event participant list is at full capacity. You cannot sign up for it :( </h3>
+                {% endif %}
+                {% if app.user.email == event.organizer.email %}
                     <a href="{{ path('events_edit', {'id': event.id}) }}">Update</a>
                     <a onclick="return confirm('Do you really want to delete {{ event.name }} ?')"
                        href="{{ path('events_delete', {'id': event.id}) }}">Delete</a>
+                {% endif%}
+                {% if app.user in event.participantList and date('now')< event.registrationDeadline %}
+                    <a href="{{ path('events_unsubscribe', {'id': event.id}) }}">Unsubscribe</a>
+                {% endif %}
                 </div>
-               {% endif %}
+
             </div>
         {% endif %}
     </div>

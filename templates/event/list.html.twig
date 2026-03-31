@@ -67,9 +67,11 @@
                                 <td>
                                     {% if app.user in event.participantList %}
                                         <span><a href="{{ path('events_detail', {'id': event.id}) }}">Show</a></span>
+
                                         <span><a id="unsubscribe"
                                                  onclick="return confirm('Are you sure you want to unsubscribe from this event?')"
                                                  href="{{ path('events_unsubscribe', {'id': event.id}) }}">Withdraw</a></span>
+
                                     {% elseif app.user == event.organizer and event.registrationDeadline > date('now') %}
                                         <span><a href="{{ path('events_detail', {'id': event.id}) }}">Show</a></span>
                                         <span><a href="{{ path('events_edit', {'id': event.id}) }}">Modify</a></span>

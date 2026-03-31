@@ -32,7 +32,7 @@ class Status
     /**
      * @var Collection<int, Event>
      */
-    #[ORM\OneToMany(targetEntity: Event::class, mappedBy: 'eventStatus', cascade: ['remove'])]
+    #[ORM\OneToMany(targetEntity: Event::class, mappedBy: 'eventStatus')]
     private Collection $events;
 
     public function __construct()

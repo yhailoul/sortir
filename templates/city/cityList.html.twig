@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<h2>
+    Cities
+</h2>
+    <section>
+    {{ form_start(filterSearch)}}
+        {{ form_row(filterSearch.searchTerm) }}
+        <button> find city</button>
+    {{ form_end(filterSearch, { render_rest: false })}}
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Zip code</th>
+                <th>Actions</th>
+
+            </tr>
+            </thead>
+            <tbody>
+            {%  set displayCities = searchedCities is not empty ? searchedCities : cities  %}
+            {%for city in displayCities %}
+                <tr>
+                    <td>{{ city.name }}</td>
+                    <td>{{ city.zipcode }}</td>
+                    <td><a onclick="confirm('Are you sure you want to delete this city ?')" href="{{ path('city_delete' , {'id':city.id}) }}">Delete</a></td>
+                    <td><a onclick="confirm('Are you sure you want to edit this city ?')" href="{{ path('city_edit' , {'id':city.id}) }}">Edit</a></td>
+                </tr>
+        {% endfor %}
+            </tbody>
+            </table>
+    </section>
+<br>
+<h3>Create a new city</h3>
+    <div id="createNewCity">
+        {{ form_start(newCityForm) }}
+        {{ form_widget(newCityForm) }}
+        <button>Create new City</button>
+        <br>
+        {{ form_end(newCityForm) }}
+    </div>
+
+{% endblock %}
+
+{% block title %}
+City
+{% endblock %}
+
