@@ -68,14 +68,8 @@ class EventController extends AbstractController
     }
 
     #[Route('/detail/{id}', name: 'detail', requirements: ['id' => '\d+'])]
-    public function detail(int $id, EventRepository $eventRepository): Response
+    public function detail(Event $event): Response
     {
-        $event = $eventRepository->find($id);
-        if (!$event) {
-            throw $this->createNotFoundException('Not event with the id ' . $id);
-        }
-
-
         return $this->render('event/detail.html.twig', [
             'event' => $event
         ]);
@@ -137,18 +131,12 @@ class EventController extends AbstractController
 
     #[Route('/edit/{id}', name: 'edit', requirements: ['id' => '\d+'])]
     public function editEvent(
-        int             $id,
+        Event $event,
         EventRepository $eventRepository,
         Request         $request,
         EventManager    $eventManager
     ): Response
     {
-
-        $event = $eventRepository->find($id);
-
-        if(!$event) {
-            throw $this->createNotFoundException('Not event with the id ' . $id);
-        }
 
         if (!$this->isGranted('EVENT_EDIT', $event)) {
             $this->addFlash('danger', 'You do not have permission to modify this event.');
@@ -173,18 +161,11 @@ class EventController extends AbstractController
 
     #[Route('/cancel/{id}', name: 'cancelled', requirements: ['id' => '\d+'])]
     public function cancelEvent(
-        int             $id,
-        EventRepository $eventRepository,
-        Request         $request,
-        StatusManager   $statusManager
+        Event         $event,
+        Request       $request,
+        StatusManager $statusManager
     ): Response
     {
-
-        $event = $eventRepository->find($id);
-
-        if(!$event) {
-            throw $this->createNotFoundException('Not event with the id ' . $id);
-        }
 
         if (!$this->isGranted('EVENT_EDIT', $event)) {
             $this->addFlash('danger', 'You do not have permission to modify this event.');
