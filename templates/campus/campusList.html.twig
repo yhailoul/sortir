@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h2>
+        Campus
+    </h2>
+    <section>
+        {{ form_start(filterSearch)}}
+        {{ form_row(filterSearch.searchTerm) }}
+        <button> find campus</button>
+        {{ form_end(filterSearch, { render_rest: false })}}
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {%  set displayCities = searchedCampus is not empty ? searchedCampus : campus  %}
+            {%for campus in displayCities %}
+                <tr>
+                    <td>{{ campus.name }}</td>
+                    <td><a onclick="confirm('Are you sure you want to delete this campus ?')" href="{{ path('campus_delete' , {'id':campus.id}) }}">Delete</a></td>
+                    <td><a onclick="confirm('Are you sure you want to edit this campus ?')" href="{{ path('campus_edit' , {'id':campus.id}) }}">Edit</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </section>
+    <br>
+
+{% endblock %}
+
+{% block title %}
+    Campus
+{% endblock %}
+

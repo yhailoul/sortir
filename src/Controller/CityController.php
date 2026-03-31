@@ -35,7 +35,7 @@ final class CityController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($city);
             $entityManager->flush();
-            return $this->redirectToRoute('app_user_cityList', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('city_list', [], Response::HTTP_SEE_OTHER);
         }
         //search city
         if ($filterForm->isSubmitted()) {
