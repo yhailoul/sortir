@@ -1,40 +1,79 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}User index{% endblock %}
+{% block title %}Users{% endblock %}
 
 {% block body %}
-    <h1>User index</h1>
+    <h1>Users list </h1>
+    <br>
+    {% if is_granted('ROLE_ADMIN') and is_granted('ROLE_USER') %}
+        <div class="flex justify-center p-4">
+        <div class="flex flex-col items-start w-full max-w-4xl">
+            <button class="border
+                border-slate-200
+                rounded-lg
+                mb-4
+                py-2
+                px-4
+                mt-2
+                text-white
+                bg-violet-500
+                hover:bg-violet-600
+                hover:text-white">
+                <a href="{{ path('app_user_new') }}">Create new user </a>
+            </button>
+        </div>
+    </div>
+    {% endif %}
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Email</th>
-                <th>Username</th>
-                <th>Roles</th>
-                <th>Activity Status</th>
+<div class="flex justify-center p-4 mb-16" >
+
+    <div class="overflow-auto
+    max-w-full max-h-[700px]
+    shadow-md
+    sm:rounded-lg
+    border">
+
+
+    <table class="w-full text-sm text-left text-gray-500">
+        <thead class="text-xs text-gray-700 uppercase bg-sky-100 sticky top-0 z-10">
+            <tr >
+                <th scope ="col" class="px-6 py-3">Id</th>
+                <th scope ="col" class="px-6 py-3">Email</th>
+                <th scope ="col" class="px-6 py-3">Username</th>
+                <th scope ="col" class="px-6 py-3">Roles</th>
+                <th scope ="col" class="px-6 py-3">Activity Status</th>
                 <th>Action</th>
             </tr>
         </thead>
         <tbody>
         {% for user in users %}
-            <tr>
-                <td>{{ user.id }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.username }}</td>
-                <td>{{ user.roles ? user.roles|json_encode : '' }}</td>
-                <td>{{ user.active}}</td>
-                <td>
-                    <a href="{{ path('app_user_show', {'id': user.id}) }}">show</a>
+            <tr class="bg-white border-b hover:bg-blue-50">
+                <td class="px-6 py-4">{{ user.id }}</td>
+                <td class="px-6 py-4">{{ user.email }}</td>
+                <td class="px-6 py-4">{{ user.username }}</td>
+                <td class="px-6 py-4">{{ user.roles ? user.roles|json_encode : '' }}</td>
+                <td class="px-6 py-4">{{ user.active}}</td>
+                <td class="px-6 py-4">
+                    <div class="flex flex-col">
+                    <a href="{{ path('app_user_show', {'id': user.id}) }}"
+                       class="hover:text-blue-600"
+                    >Show User</a>
 
                     {% if user.active == true and is_granted('ROLE_ADMIN') %}
-                        <a onclick="confirm('Do you really want to DEACTIVATE user: {{ user.username }} ?')" href="{{ path('app_user_deactivate_admin', {'id': user.id}) }}">Deactivate User</a>
+                        <a onclick="confirm('Do you really want to DEACTIVATE user: {{ user.username }} ?')" href="{{ path('app_user_deactivate_admin', {'id': user.id}) }}"
+                           class="hover:text-violet-600"
+                        >Deactivate User</a>
                     {% elseif user.active == false and is_granted('ROLE_ADMIN') %}
-                            <a onclick="confirm('Do you really want to ACTIVATE user: {{ user.username }} ?')" href="{{ path('app_user_activate_admin', {'id': user.id}) }}">Activate User</a>
+                            <a onclick="confirm('Do you really want to ACTIVATE user: {{ user.username }} ?')" href="{{ path('app_user_activate_admin', {'id': user.id}) }}"
+                               class="hover:text-violet-500"
+                            >Activate User</a>
                     {% endif %}
                     {% if is_granted("ROLE_ADMIN") %}
-                    <a onclick="confirm('Do you really want to DELETE user: {{ user.username }} PERMANENTLY?')" href="{{ path('app_user_delete', { 'id':user.id }) }}">Delete User</a>
+                    <a onclick="confirm('Do you really want to DELETE user: {{ user.username }} PERMANENTLY?')" href="{{ path('app_user_delete', { 'id':user.id }) }}"
+                       class="hover:text-red-500"
+                    >Delete User</a>
                     {% endif %}
+                    </div>
                 </td>
             </tr>
         {% else %}
@@ -44,7 +83,7 @@
         {% endfor %}
         </tbody>
     </table>
-    {% if is_granted('ROLE_ADMIN') and is_granted('ROLE_USER') %}
-    <a href="{{ path('app_user_new') }}">Create new User </a>
-    {% endif %}
+    </div>
+</div>
+
 {% endblock %}

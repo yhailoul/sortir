@@ -10,23 +10,25 @@
 
     <div class="flex flex-row flex-wrap gap-6 space-x-6 items-start p-4">
 
-        <div class="w-[20vw] h-80 flex
+        <div class="w-[20vw] flex
                 aspect-square
                 rounded-md
                 flex-shrink-0
                 flex flex-col
                 items-center justify-center
-                bg-white p-2">
+                bg-white p-2
+                overflow-hidden">
             {# eventPhoto #}
             {{ form_label(form.eventPhoto) }}
             {{ form_errors(form.eventPhoto) }}
             {{ form_widget(form.eventPhoto, {'attr':{'class': '
+            w-full
             text-sm px-3 py-2
             border border-slate-200 rounded-lg
             focus:border-violet-400 outline-none
             transition-all cursor-pointer
             bg-white
-            mt-8'}}) }}
+            mt-24'}}) }}
         </div>
 
         <div class="flex-1 min-w-[320px] rounded-md bg-white p-6">
@@ -143,15 +145,12 @@
                 py-2
                 px-4
                 mt-2
-                bg-red-500
-                hover:bg-violet-50
+                text-white
+                bg-violet-500
+                hover:bg-violet-600
                 hover:text-white
 ">
-                    <a href="{{ path('events_location_create') }}"
-                       class="text-sm
-                        bg-violet-400
-                        rounded-lg
-                        hover:bg-violet-200">
+                    <a href="{{ path('events_location_create') }}">
                         new location</a>
                 </button>
             </div>
