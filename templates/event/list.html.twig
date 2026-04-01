@@ -112,7 +112,7 @@
                     <p class="text-center col-span-full py-10">Aucun événement trouvé</p>
                 {% else %}
                     {% for event in displayEvents %}
-                        {% if event.eventStatus.label|lower != "historized" %}
+                        {% if event.eventStatus.label|lower != "historized" and (event.eventStatus.label != "In creation" or app.user == event.organizer) %}
                             {% set currentClass = statusStyles[event.eventStatus.label] ?? 'bg-white text-black border-gray-300' %}
 
                             <div class="bg-white rounded-[2rem] p-5 shadow-sm flex flex-col gap-4">
@@ -189,7 +189,7 @@
                                             {% endif %}
                                         {% elseif app.user %}
                                             {% if app.user in event.participantList %}
-                                                {% if event.registrationDeadline > date('now') and event.eventStatus.label == 'Open'%}
+                                                {% if event.registrationDeadline > date('now') and event.eventStatus.label == 'Open' %}
                                                     <a href="{{ path('events_unsubscribe', {'id': event.id}) }}"
                                                        onclick="return confirm('Se désister ?')"
                                                        class="flex-1 text-center bg-red-100 hover:bg-red-200 text-red-600 text-sm font-semibold py-2 rounded-xl transition-colors">
