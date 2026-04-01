@@ -57,7 +57,6 @@
                         {# Date #}
                         <div
                             class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg bg-white text-sm text-slate-500">
-                            <i class="fa-regular fa-calendar text-xs"></i>
                             {{ form_widget(filterForm.startDate, {'attr': {'class': 'outline-none border-none text-sm bg-transparent cursor-pointer w-32'}}) }}
                             <span>→</span>
                             {{ form_widget(filterForm.endDate, {'attr': {'class': 'outline-none border-none text-sm bg-transparent cursor-pointer w-32'}}) }}
@@ -105,14 +104,14 @@
             </div>
             {# ********************************** #}
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
-                {% set displayEvents = events is not empty ? events : eventAll %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10 mt-10 mx-10">
+                {% set displayEvents = isFiltered ? events : eventAll %}
 
                 {% if displayEvents is empty %}
-                    <p class="text-center col-span-full py-10">Aucun événement trouvé</p>
+                    <p class="text-center col-span-full py-10">No events found</p>
                 {% else %}
                     {% for event in displayEvents %}
-                        {% if event.eventStatus.label|lower != "historized" %}
+                        {% if event.eventStatus.label|lower != "historized" and (event.eventStatus.label != "In creation" or app.user == event.organizer) %}
                             {% set currentClass = statusStyles[event.eventStatus.label] ?? 'bg-white text-black border-gray-300' %}
 
                             <div class="bg-white rounded-[2rem] p-5 shadow-sm flex flex-col gap-4">
@@ -189,7 +188,7 @@
                                             {% endif %}
                                         {% elseif app.user %}
                                             {% if app.user in event.participantList %}
-                                                {% if event.registrationDeadline > date('now') %}
+                                                {% if event.registrationDeadline > date('now') and event.eventStatus.label == 'Open' %}
                                                     <a href="{{ path('events_unsubscribe', {'id': event.id}) }}"
                                                        onclick="return confirm('Se désister ?')"
                                                        class="flex-1 text-center bg-red-100 hover:bg-red-200 text-red-600 text-sm font-semibold py-2 rounded-xl transition-colors">

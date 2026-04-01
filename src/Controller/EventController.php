@@ -52,9 +52,12 @@ class EventController extends AbstractController
         $filterForm = $this->createForm(FilterSearchType::class, $eventSearch);
         $filterForm->handleRequest($request);
 
+        $isFiltered = false;
+
         if ($filterForm->isSubmitted()) {
             $campus = $eventSearch->getCampus();
             $events = $eventRepository->filterBySelection($user, $eventSearch, $campus);
+            $isFiltered = true;
 
         }
         return $this->render('event/list.html.twig', [
@@ -62,7 +65,8 @@ class EventController extends AbstractController
             'eventAll' => $eventsAll,
 //            'eventList' => $eventList,
             'filterForm' => $filterForm,
-            'user' => $user
+            'user' => $user,
+            'isFiltered' => $isFiltered,
         ]);
 
     }
@@ -131,7 +135,7 @@ class EventController extends AbstractController
 
     #[Route('/edit/{id}', name: 'edit', requirements: ['id' => '\d+'])]
     public function editEvent(
-        Event $event,
+        Event           $event,
         EventRepository $eventRepository,
         Request         $request,
         EventManager    $eventManager
