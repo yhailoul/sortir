@@ -8,7 +8,6 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
-use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\TelType;
@@ -57,6 +56,7 @@ class UserType extends AbstractType
             ])
             ->add('phone', TelType::class, [
                 'label' => 'Phone',
+                'required' => false,
                 'attr' => [
                     'placeholder' => 'enter phone number',
                 ],
@@ -115,18 +115,21 @@ class UserType extends AbstractType
                         mimeTypesMessage: 'Only JPG, PNG, webp files are allowed',
                     ),
                 ],
-            ])
-            ->add('csvFile', FileType::class, [
-                'label' => 'Importer via CSV',
-                'mapped' => false,
-                'required' => false,
-                'constraints' => [
-                    new File(
-                        mimeTypes: ['text/csv', 'text/plain'],
-                        mimeTypesMessage: 'The file must be a CSV file.',
-                    ),
-                ],
             ]);
+
+            if ($options['show_csv_import']){
+                $builder->add('csvFile', FileType::class, [
+                    'label' => 'Importer via CSV',
+                    'mapped' => false,
+                    'required' => false,
+                    'constraints' => [
+                        new File(
+                            mimeTypes: ['text/csv', 'text/plain'],
+                            mimeTypesMessage: 'The file must be a CSV file.',
+                        ),
+                    ],
+                ]);
+            }
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -134,6 +137,7 @@ class UserType extends AbstractType
         $resolver->setDefaults([
             'data_class' => User::class,
             'validation_groups' => ['Default'],
+            'show_csv_import' => false,
         ]);
     }
 }

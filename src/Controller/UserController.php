@@ -54,7 +54,9 @@ final class UserController extends AbstractController
             ? ['Default']                       // CSV : on valide uniquement le champ csvFile
             : ['Default', 'manual_creation'];   // Manuel : on valide tous les champs
 
-        $userForm = $this->createForm(UserType::class, $user);
+        $userForm = $this->createForm(UserType::class, $user, [
+            'show_csv_import' => true
+        ]);
         $userForm->handleRequest($request);
 
         if ($userForm->isSubmitted()) {
@@ -135,6 +137,13 @@ final class UserController extends AbstractController
             $form = $this->createForm(UserType::class, $user);
             $form->handleRequest($request);
 
+            if (!$user->getPhoto()) {
+                $defaultAvatar->correctionPhotoProfile($user);
+                $entityManager->flush();
+            }
+
+            $photoPath = $defaultAvatar->resolvePhotoPath($user->getPhoto());
+
             if ($form->isSubmitted() && $form->isValid()) {
                 $checkPassword = $form->get('password')->getData();
 
@@ -156,6 +165,7 @@ final class UserController extends AbstractController
         return $this->render('user/edit.html.twig', [
             'user' => $user,
             'form' => $form,
+            'photoPath' => $photoPath,
         ]);
     }
 

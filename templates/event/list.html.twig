@@ -216,3 +216,8 @@
         </div>
     </div>
 {% endblock %}
+
+{% block javascripts %}
+        {{ parent() }}
+        {% include 'event/_dates_filters.js.html.twig' %}
+{% endblock %}

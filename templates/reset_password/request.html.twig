@@ -1,23 +1,35 @@
 {% extends 'base.html.twig' %}
-{% block header %}
-{% endblock %}
+{% block header %}{% endblock %}
+{% block main_class %}{% endblock %}
 {% block title %}Reset your password{% endblock %}
 
 {% block body %}
-    {% for flash_error in app.flashes('reset_password_error') %}
-        <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
-    {% endfor %}
-    <h1>Reset your password</h1>
+    <div class="min-h-screen flex items-center justify-center"
+        style="background: radial-gradient(circle at 30% 30%, #a78bfa, #60a5fa, #e0f2fe)">
+        <div class="bg-white rounded-xl p-12 w-full max-w-150">
 
-    {{ form_start(requestForm) }}
-        {{ form_row(requestForm.email) }}
-        <div>
-            <small>
-                Enter your email address, and we will send you a
-                link to reset your password.
-            </small>
+            {% for flash_error in app.flashes('reset_password_error') %}
+                <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
+            {% endfor %}
+
+            <div class="text-2xl text-[#575757] font-bold mb-10">
+                <h1>Reset your password</h1>
+            </div>
+
+            {{ form_start(requestForm) }}
+            {{ form_row(requestForm.email, {
+                'attr' : {'class': 'w-full border border-slate-300 p-2 rounded-lg focus:ring-2 focus:ring-violet-500 outline-none transition-all'}
+            }) }}
+
+            <div class="mt-1 mb-5 ml-2">
+                <small>
+                    Enter your email address, and we will send you a
+                    link to reset your password.
+                </small>
+            </div>
+
+            <button class="flex-1 text-center bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold py-2 rounded-xl transition-colors px-2">Send password reset email</button>
+            {{ form_end(requestForm) }}
         </div>
-
-        <button class="btn btn-primary">Send password reset email</button>
-    {{ form_end(requestForm) }}
+    </div>
 {% endblock %}
