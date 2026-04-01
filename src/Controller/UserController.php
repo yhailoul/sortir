@@ -52,6 +52,7 @@ final class UserController extends AbstractController
             : ['Default', 'manual_creation'];   // Manuel : on valide tous les champs
 
         $userForm = $this->createForm(UserType::class, $user, [
+            'validation_groups' => $validationGroups,
             'show_csv_import' => true
         ]);
         $userForm->handleRequest($request);
@@ -113,14 +114,16 @@ final class UserController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_user_edit', methods: ['GET', 'POST'])]
-    public function edit(Request                $request,
-                         UserManager            $userManager,
-                         User                   $user,
-                         AvatarService          $defaultAvatar): Response
+    public function edit(Request       $request,
+                         UserManager   $userManager,
+                         User          $user,
+                         AvatarService $defaultAvatar): Response
     {
         $this->denyAccessUnlessGranted(UserVoter::EDIT, $user);
 
-        $form = $this->createForm(UserType::class, $user);
+        $form = $this->createForm(UserType::class, $user, [
+            'is_edit' => true
+        ]);
         $form->handleRequest($request);
 
 

@@ -24,6 +24,10 @@ class UserType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $placeholder = $options['is_edit']
+            ? 'Leave blank to keep current password'
+            : 'Enter a password';
+
         $builder
             ->add('username', TextType::class, [
                 'label' => 'Username',
@@ -84,14 +88,14 @@ class UserType extends AbstractType
                 'required' => false,
                 'first_options' => [
                     'label' => 'Password',
-                    'attr' => ['placeholder' => 'Leave blank to keep current password'],
+                    'attr' => ['placeholder' => $placeholder],
                     'constraints' => [
-                        new NotBlank(message: 'Password is required.'),
+                        new NotBlank(message: 'Password is required.', groups: ['manual_creation']),
                     ],
                 ],
                 'second_options' => ['label' => 'Repeat Password'],
                 'constraints' => [
-                    new NotBlank(message: 'Please enter a password'),
+                    new NotBlank(message: 'Repeat password is required.', groups: ['manual_creation']),
                     new Length(
                         min: 8,
                         max: 4096,
@@ -117,19 +121,19 @@ class UserType extends AbstractType
                 ],
             ]);
 
-            if ($options['show_csv_import']){
-                $builder->add('csvFile', FileType::class, [
-                    'label' => 'Importer via CSV',
-                    'mapped' => false,
-                    'required' => false,
-                    'constraints' => [
-                        new File(
-                            mimeTypes: ['text/csv', 'text/plain'],
-                            mimeTypesMessage: 'The file must be a CSV file.',
-                        ),
-                    ],
-                ]);
-            }
+        if ($options['show_csv_import']) {
+            $builder->add('csvFile', FileType::class, [
+                'label' => 'Importer via CSV',
+                'mapped' => false,
+                'required' => false,
+                'constraints' => [
+                    new File(
+                        mimeTypes: ['text/csv', 'text/plain'],
+                        mimeTypesMessage: 'The file must be a CSV file.',
+                    ),
+                ],
+            ]);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -138,6 +142,7 @@ class UserType extends AbstractType
             'data_class' => User::class,
             'validation_groups' => ['Default'],
             'show_csv_import' => false,
+            'is_edit' => false,
         ]);
     }
 }
