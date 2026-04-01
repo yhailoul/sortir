@@ -40,7 +40,7 @@ class AppFixtures extends Fixture
 
         $users = $this->user($manager, $campusList);
 
-        $this->event($manager, $users, $statusList, $locationList, $campusList );
+        $this->event($manager, $users, $statusList, $locationList, $campusList);
 
         $manager->flush();
     }
@@ -97,13 +97,12 @@ class AppFixtures extends Fixture
         $locations = [];
         for ($i = 0; $i < 50; $i++) {
             $location = new Location();
-            $location
-                //->addEvent($randomEvent)
-                ->setCity($this->faker->randomElement($cityList))
-                ->setName($faker->sentence())
-                ->setStreet($faker->streetAddress())
-                ->setLatitude($faker->latitude())
-                ->setLongitude($faker->longitude());
+            //->addEvent($randomEvent)
+            $location->setCity($this->faker->randomElement($cityList));
+            $location->setName($faker->sentence());
+            $location->setStreet($faker->streetAddress());
+            $location->setLatitude($faker->latitude());
+            $location->setLongitude($faker->longitude());
             $locations[] = $location;
             $manager->persist($location);
         }
