@@ -53,7 +53,7 @@ class Event
     private ?string $infosEvent = null;
 
     #[ORM\ManyToOne(inversedBy: 'organizerEvents')]
-    private User $organizer;
+    private ?User $organizer = null;
 
     /**
      * @var Collection<int, User>
