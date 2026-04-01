@@ -1,45 +1,115 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-<h2>
+<h2 class="text-neutral-500 text-lg ">
     Cities
 </h2>
-    <section>
+    <section class="flex flex-col justify-center p-4 m-16">
+        <div class=" mx-auto w-full max-w-4xl" >
     {{ form_start(filterSearch)}}
-        {{ form_row(filterSearch.searchTerm) }}
-        <button> find city</button>
+        {{ form_row(filterSearch.searchTerm, {'attr':{'class':'
+        w-full
+        text-sm px-3 py-2
+        p-4
+        rounded-lg
+        border border-slate-200
+        focus:border-violet-400 outline-none
+        mt-2
+            '}}) }}
+        <button
+            class="border
+                border-slate-200
+                rounded-lg
+                mb-4
+                py-2
+                px-4
+                mt-2
+                text-white
+                bg-violet-500
+                hover:bg-violet-600
+                hover:text-white"
+        > find city</button>
     {{ form_end(filterSearch, { render_rest: false })}}
-        <table class="table">
-            <thead>
+            <div
+                class="overflow-auto
+                    max-w-full max-h-[700px]
+                    shadow-md
+                    sm:rounded-lg
+                    mx-auto max-w-4xl w-full
+                    border">
+
+        <table class="w-full text-sm text-left text-gray-500">
+            <thead class="text-xs text-gray-700 uppercase bg-sky-100 sticky top-0 z-10">
             <tr>
-                <th>Name</th>
-                <th>Zip code</th>
-                <th>Actions</th>
+                <th scope ="col" class="px-6 py-3">Name</th>
+                <th scope ="col" class="px-6 py-3">Zip code</th>
+                <th scope ="col" class="px-6 py-3">Actions</th>
 
             </tr>
             </thead>
             <tbody>
             {%  set displayCities = searchedCities is not empty ? searchedCities : cities  %}
             {%for city in displayCities %}
-                <tr>
-                    <td>{{ city.name }}</td>
-                    <td>{{ city.zipcode }}</td>
-                    <td><a onclick="confirm('Are you sure you want to delete this city ?')" href="{{ path('city_delete' , {'id':city.id}) }}">Delete</a></td>
-                    <td><a onclick="confirm('Are you sure you want to edit this city ?')" href="{{ path('city_edit' , {'id':city.id}) }}">Edit</a></td>
+                <tr class="bg-white border-b hover:bg-blue-50">
+                    <td class="px-6 py-4">{{ city.name }}</td>
+                    <td class="px-6 py-4">{{ city.zipcode }}</td>
+                    <td><a onclick="confirm('Are you sure you want to delete this city ?')" href="{{ path('city_delete' , {'id':city.id}) }}"
+                         class="hover:text-red-500"
+                        >Delete</a>
+                    <a onclick="confirm('Are you sure you want to edit this city ?')" href="{{ path('city_edit' , {'id':city.id}) }}"
+                       class="hover:text-violet-500"
+                       >Edit</a></td>
                 </tr>
         {% endfor %}
             </tbody>
             </table>
+        </div>
+    </div>
     </section>
 <br>
-<h3>Create a new city</h3>
-    <div id="createNewCity">
-        {{ form_start(newCityForm) }}
-        {{ form_widget(newCityForm) }}
-        <button>Create new City</button>
-        <br>
-        {{ form_end(newCityForm) }}
-    </div>
+
+    <section class="flex flex-col justify-center p-4 mb-16">
+        <div class=" mx-auto w-full max-w-4xl" >
+            <h3 class="mt-4">Create a new city</h3>
+            {{ form_start(newCityForm) }}
+            {{ form_label(newCityForm.name) }}
+            {{ form_widget(newCityForm.name, {'attr':{'class':'
+        w-full
+        text-sm px-3 py-2
+        p-4
+        rounded-lg
+        border border-slate-200
+        focus:border-violet-400 outline-none
+        mt-2
+            '}}) }}
+            {{ form_label(newCityForm.zipCode) }}
+            {{ form_widget(newCityForm.zipCode, {'attr':{'class':'
+        w-full
+        text-sm px-3 py-2
+        p-4
+        rounded-lg
+        border border-slate-200
+        focus:border-violet-400 outline-none
+        mt-2
+            '}}) }}
+            <button
+                class="border
+                border-slate-200
+                rounded-lg
+                mb-4
+                py-2
+                px-4
+                mt-2
+                text-white
+                bg-violet-500
+                hover:bg-violet-600
+                hover:text-white"
+            >Create new City</button>
+            <br>
+            {{ form_end(newCityForm) }}
+        </div>
+    </section>
+
 
 {% endblock %}
 
