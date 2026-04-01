@@ -71,7 +71,6 @@ class EventRepository extends ServiceEntityRepository
         if ($filter->getPassed()) {
             $qb->andWhere('e.dateEndHour < :now')
                 ->setParameter('now', new DateTime('now'));
-
         }
 
         $qb->orderBy('e.dateStartHour', 'ASC');
