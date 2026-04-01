@@ -11,12 +11,10 @@ use App\Form\FilterSearchType;
 use App\Form\LocationType;
 use App\Form\Model\FilterSearch;
 use App\Repository\EventRepository;
-use App\Repository\LocationRepository;
-use App\Repository\StatusRepository;
 use App\Service\EventManager;
 use App\Service\EventRegistrationManager;
+use App\Service\LocationManager;
 use App\Service\StatusManager;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,6 +26,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class EventController extends AbstractController
 {
 
+    public function __construct(private readonly LocationManager $locationManager)
+    {
+    }
+
     #[Route('/list', name: 'listFilters', methods: ['GET', 'POST'])]
     public function listFilters(Request         $request,
                                 EventRepository $eventRepository,
@@ -37,16 +39,10 @@ class EventController extends AbstractController
     {
         $events = [];
         $eventsAll = $eventRepository->AllEvents();
-        // $eventList = $eventRepository->findEventsToUpdate();
         $user = $security->getUser();
         if (!$user instanceof User) {
             throw $this->createAccessDeniedException('utilisateur inexistant');
         }
-
-//        foreach ($eventList as $e) {
-//            $statusManager->updateEventStatus($e);
-//        }
-//        $entityManager->flush();
 
         $eventSearch = new FilterSearch();
         $filterForm = $this->createForm(FilterSearchType::class, $eventSearch);
@@ -63,7 +59,6 @@ class EventController extends AbstractController
         return $this->render('event/list.html.twig', [
             'events' => $events,
             'eventAll' => $eventsAll,
-//            'eventList' => $eventList,
             'filterForm' => $filterForm,
             'user' => $user,
             'isFiltered' => $isFiltered,
@@ -108,24 +103,21 @@ class EventController extends AbstractController
     }
 
     #[Route('/new/location', name: 'location_create', methods: ['GET', 'POST'])]
-    public function createNewEventLocation(Request $request, EntityManagerInterface $manager, LocationRepository $locationRepository): Response
+    public function createNewEventLocation(Request $request): Response
     {
         $location = new Location();
         $locationForm = $this->createForm(LocationType::class, $location);
         $locationForm->handleRequest($request);
 
         if ($locationForm->isSubmitted() && $locationForm->isValid()) {
-            $isExistingLocation = $locationRepository->findBy(array('name' => $location->getName()));
-            if ($isExistingLocation) {
+            $created = $this->locationManager->handleLocation($location);
+
+            if (!$created) {
                 $this->addFlash('error', 'Location already exists!');
-                return $this->redirectToRoute('events_create');
+            } else {
+                $this->addFlash('success', 'Location created!');
             }
 
-            $location->setLatitude(null);
-            $location->setLongitude(null);
-            $manager->persist($location);
-            $manager->flush();
-            $this->addFlash('success', 'Location created!');
             return $this->redirectToRoute('events_create');
         }
         return $this->render('event/newLocation.html.twig', [
@@ -136,7 +128,6 @@ class EventController extends AbstractController
     #[Route('/edit/{id}', name: 'edit', requirements: ['id' => '\d+'])]
     public function editEvent(
         Event           $event,
-        EventRepository $eventRepository,
         Request         $request,
         EventManager    $eventManager
     ): Response
@@ -151,7 +142,7 @@ class EventController extends AbstractController
         $eventForm->handleRequest($request);
         if ($eventForm->isSubmitted() && $eventForm->isValid()) {
             $buttonClicked = $eventForm->getClickedButton();
-            $action = $buttonClicked->getName() ?? 'save'; // Renvoie save par défaut si null pour éviter l'erreur
+            $action = $buttonClicked?->getName() ?? 'save'; // Renvoie save par défaut si null pour éviter l'erreur
             $imageFile = $eventForm->get('eventPhoto')->getData();
             $eventManager->handleEvent($event, $this->getUser(), $imageFile, $action);
             $this->addFlash('success', 'Event edited!');
