@@ -3,7 +3,8 @@
 {% block body %}
     {{ form_start(eventFormCancelled) }}
     {{ form_widget(eventFormCancelled) }}
-    <button type="submit">Cancel event</button>
+    <button onclick="return confirm('Do you really want to canceled this event ?')" type="submit">Cancel event
+    </button>
     {{ form_end(eventFormCancelled) }}
 {% endblock %}
 

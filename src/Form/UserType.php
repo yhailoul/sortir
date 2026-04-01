@@ -11,9 +11,11 @@ use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
+use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\Image;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -24,32 +26,56 @@ class UserType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('username',TextType::class,
-            ['label' => "Username",
-            'attr' => [
-                'placeholder' =>'enter a username']
-            ,])
-            ->add('firstName',TextType::class,[
-                'label' => "Firstname",
+            ->add('username', TextType::class, [
+                'label' => 'Username',
                 'attr' => [
-                'placeholder' =>'enter  firstname',]
+                    'placeholder' => 'enter a username',
+                    'maxlength' => 180,
+                    'pattern' => '.{3,}',
+                ],
+                'constraints' => [
+                    new NotBlank(message: 'Username is required.'),
+                ],
             ])
-            ->add('lastName',TextType::class,[
-                'label' => "Lastname",
+            ->add('firstName', TextType::class, [
+                'label' => 'Firstname',
                 'attr' => [
-                'placeholder' =>'enter  lastname',]
+                    'placeholder' => 'enter firstname',
+                ],
+                'constraints' => [
+                    new NotBlank(message: 'Firstname is required.'),
+                ],
             ])
-            ->add('phone',NumberType::class,[
-                'label' => "Phone",
-                'attr' => ['placeholder' =>'enter phone number',]
+            ->add('lastName', TextType::class, [
+                'label' => 'Lastname',
+                'attr' => [
+                    'placeholder' => 'enter lastname',
+                ],
+                'constraints' => [
+                    new NotBlank(message: 'Lastname is required.'),
+                ],
             ])
-            ->add('email',EmailType::class,[
-                'label' => "Email",
-                'attr' => ['placeholder' =>'enter email',]
+            ->add('phone', TelType::class, [
+                'label' => 'Phone',
+                'attr' => [
+                    'placeholder' => 'enter phone number',
+                ],
+            ])
+            ->add('email', EmailType::class, [
+                'label' => 'Email',
+                'attr' => [
+                    'placeholder' => 'enter email',
+                ],
+                'constraints' => [
+                    new NotBlank(message: 'Email is required.'),
+                ],
             ])
             ->add('campus', EntityType::class, [
                 'class' => Campus::class,
                 'choice_label' => 'name',
+                'constraints' => [
+                    new NotBlank(message: 'Campus is required.'),
+                ],
             ])
             ->add('password', RepeatedType::class, [
                 'type' => PasswordType::class,
@@ -59,6 +85,9 @@ class UserType extends AbstractType
                 'first_options' => [
                     'label' => 'Password',
                     'attr' => ['placeholder' => 'Leave blank to keep current password'],
+                    'constraints' => [
+                        new NotBlank(message: 'Password is required.'),
+                    ],
                 ],
                 'second_options' => ['label' => 'Repeat Password'],
                 'constraints' => [
@@ -72,20 +101,31 @@ class UserType extends AbstractType
                     new Regex(pattern: '/^(?=.*[A-Z])/', message: 'Your password must contain at least one uppercase letter'),
                     new Regex(pattern: '/^(?=.*\d)/', message: 'Your password must contain at least one number'),
                     new Regex(pattern: '/^(?=.*[@$!%*?&])/', message: 'Your password must contain at least one special character (@$!%*?&)'),
-                ]
+                ],
             ])
             ->add('photo', FileType::class, [
                 'label' => 'Profile Picture',
                 'mapped' => false,
                 'required' => false,
                 'constraints' => [
-                    new Image(maxSize: '1M', mimeTypes: [
-                        'image/jpeg',
-                        'image/png',
-                        'image/webp'
-                    ], maxSizeMessage: 'Maximum file size allowed is 1MB', mimeTypesMessage: 'Only JPG, PNG, webp files are allowed')
-                ]
-
+                    new Image(
+                        maxSize: '1M',
+                        mimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+                        maxSizeMessage: 'Maximum file size allowed is 1MB',
+                        mimeTypesMessage: 'Only JPG, PNG, webp files are allowed',
+                    ),
+                ],
+            ])
+            ->add('csvFile', FileType::class, [
+                'label' => 'Importer via CSV',
+                'mapped' => false,
+                'required' => false,
+                'constraints' => [
+                    new File(
+                        mimeTypes: ['text/csv', 'text/plain'],
+                        mimeTypesMessage: 'The file must be a CSV file.',
+                    ),
+                ],
             ]);
     }
 
@@ -93,6 +133,7 @@ class UserType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => User::class,
+            'validation_groups' => ['Default'],
         ]);
     }
 }

@@ -11,11 +11,10 @@ use App\Form\FilterSearchType;
 use App\Form\LocationType;
 use App\Form\Model\FilterSearch;
 use App\Repository\EventRepository;
-use App\Repository\LocationRepository;
 use App\Service\EventManager;
 use App\Service\EventRegistrationManager;
+use App\Service\LocationManager;
 use App\Service\StatusManager;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,54 +26,49 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class EventController extends AbstractController
 {
 
+    public function __construct(private readonly LocationManager $locationManager)
+    {
+    }
+
     #[Route('/list', name: 'listFilters', methods: ['GET', 'POST'])]
-    public function listFilters(Request          $request,
-                                EventRepository  $eventRepository,
-                                Security         $security,
-                                StatusManager $statusManager,
-                                ): Response
+    public function listFilters(Request         $request,
+                                EventRepository $eventRepository,
+                                Security        $security,
+                                StatusManager   $statusManager,
+    ): Response
     {
         $events = [];
         $eventsAll = $eventRepository->AllEvents();
-       // $eventList = $eventRepository->findEventsToUpdate();
         $user = $security->getUser();
         if (!$user instanceof User) {
             throw $this->createAccessDeniedException('utilisateur inexistant');
         }
 
-//        foreach ($eventList as $e) {
-//            $statusManager->updateEventStatus($e);
-//        }
-//        $entityManager->flush();
-
         $eventSearch = new FilterSearch();
         $filterForm = $this->createForm(FilterSearchType::class, $eventSearch);
         $filterForm->handleRequest($request);
 
+        $isFiltered = false;
+
         if ($filterForm->isSubmitted()) {
             $campus = $eventSearch->getCampus();
             $events = $eventRepository->filterBySelection($user, $eventSearch, $campus);
+            $isFiltered = true;
 
         }
         return $this->render('event/list.html.twig', [
             'events' => $events,
-            'eventAll'=>$eventsAll,
-//            'eventList' => $eventList,
+            'eventAll' => $eventsAll,
             'filterForm' => $filterForm,
-            'user' => $user
+            'user' => $user,
+            'isFiltered' => $isFiltered,
         ]);
 
     }
 
     #[Route('/detail/{id}', name: 'detail', requirements: ['id' => '\d+'])]
-    public function detail(int $id, EventRepository $eventRepository): Response
+    public function detail(Event $event): Response
     {
-        $event = $eventRepository->find($id);
-        if (!$event) {
-            throw $this->createNotFoundException('Not event with the id ' . $id);
-        }
-
-
         return $this->render('event/detail.html.twig', [
             'event' => $event
         ]);
@@ -108,22 +102,22 @@ class EventController extends AbstractController
         ]);
     }
 
-    #[Route('/new/location', name: 'location_create', methods: ['GET','POST'])]
-    public function createNewEventLocation(Request $request, EntityManagerInterface $manager, LocationRepository $locationRepository ): Response{
+    #[Route('/new/location', name: 'location_create', methods: ['GET', 'POST'])]
+    public function createNewEventLocation(Request $request): Response
+    {
         $location = new Location();
         $locationForm = $this->createForm(LocationType::class, $location);
         $locationForm->handleRequest($request);
-        $isExistingLocation = $locationRepository->findBy(array('name'=>$location->getName()));
-        if($isExistingLocation){
-            $this->addFlash('error', 'Location already exists!');
-            return $this->redirectToRoute('events_create');
-        }
-        if($locationForm->isSubmitted() && $locationForm->isValid()){
-            $location->setLatitude(null);
-            $location->setLongitude(null);
-            $manager->persist($location);
-            $manager->flush();
-            $this->addFlash('success', 'Location created!');
+
+        if ($locationForm->isSubmitted() && $locationForm->isValid()) {
+            $created = $this->locationManager->handleLocation($location);
+
+            if (!$created) {
+                $this->addFlash('error', 'Location already exists!');
+            } else {
+                $this->addFlash('success', 'Location created!');
+            }
+
             return $this->redirectToRoute('events_create');
         }
         return $this->render('event/newLocation.html.twig', [
@@ -133,14 +127,11 @@ class EventController extends AbstractController
 
     #[Route('/edit/{id}', name: 'edit', requirements: ['id' => '\d+'])]
     public function editEvent(
-        int             $id,
-        EventRepository $eventRepository,
+        Event           $event,
         Request         $request,
         EventManager    $eventManager
     ): Response
     {
-
-        $event = $eventRepository->find($id);
 
         if (!$this->isGranted('EVENT_EDIT', $event)) {
             $this->addFlash('danger', 'You do not have permission to modify this event.');
@@ -151,7 +142,7 @@ class EventController extends AbstractController
         $eventForm->handleRequest($request);
         if ($eventForm->isSubmitted() && $eventForm->isValid()) {
             $buttonClicked = $eventForm->getClickedButton();
-            $action = $buttonClicked->getName() ?? 'save'; // Renvoie save par défaut si null pour éviter l'erreur
+            $action = $buttonClicked?->getName() ?? 'save'; // Renvoie save par défaut si null pour éviter l'erreur
             $imageFile = $eventForm->get('eventPhoto')->getData();
             $eventManager->handleEvent($event, $this->getUser(), $imageFile, $action);
             $this->addFlash('success', 'Event edited!');
@@ -164,62 +155,38 @@ class EventController extends AbstractController
     }
 
     #[Route('/cancel/{id}', name: 'cancelled', requirements: ['id' => '\d+'])]
-    #[IsGranted("ROLE_ADMIN")]
     public function cancelEvent(
-        int             $id,
-        EventRepository $eventRepository,
-        Request         $request,
-        EntityManagerInterface $manager
+        Event         $event,
+        Request       $request,
+        StatusManager $statusManager
     ): Response
     {
 
-        $event = $eventRepository->find($id);
+        if (!$this->isGranted('EVENT_EDIT', $event)) {
+            $this->addFlash('danger', 'You do not have permission to modify this event.');
+            return $this->redirectToRoute('events_listFilters');
+        }
+
+        if ($event->getEventStatus()->getLabel() === "Canceled") {
+            $this->addFlash('warning', 'Event is already cancelled!');
+            return $this->redirectToRoute('events_listFilters');
+        }
+
         $form = $this->createForm(CancelledEventType::class, $event);
         $form->handleRequest($request);
-        if($event->getEventStatus()=="canceled"){
-            $this->addFlash('danger', 'Event cancelled!');
-            return $this->redirectToRoute('events_listFilters');
-        }else{
-            $eventCancelledStatus=$event->getEventStatus()->setLabel("canceled");
-            $event->setEventStatus($eventCancelledStatus);
 
-            if ($form->isSubmitted()) {
-                $manager->persist($event);
-                $manager->flush();
+        if ($form->isSubmitted() && $form->isValid()) {
 
-                $this->addFlash('success', 'Event cancelled');
-                return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
-            }
+            $statusManager->cancelEvent($event);
+
+            $this->addFlash('success', 'Event cancelled!');
+            return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
+
         }
 
         return $this->render('event/cancelledEvent.html.twig', [
             'eventFormCancelled' => $form->createView()
         ]);
-    }
-
-    #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '\d+'])]
-    public function deleteEvent(
-        int                    $id,
-        EventRepository        $eventRepository,
-        EntityManagerInterface $entityManager
-    ): Response
-    {
-        $event = $eventRepository->find($id);
-
-        if (!$this->isGranted('EVENT_EDIT', $event)) {
-            $this->addFlash('danger', 'You do not have permission to delete this event.');
-            return $this->redirectToRoute('events_listFilters');
-        }
-
-        if (!$event) {
-            throw $this->createNotFoundException('There is not event with the id ' . $id);
-        }
-
-        $entityManager->remove($event);
-        $entityManager->flush();
-
-        $this->addFlash('success', 'Event deleted!');
-        return $this->redirectToRoute('events_list', ['page' => 1]);
     }
 
     #[Route('/{id}/register', name: 'register', requirements: ['id' => '\d+'])]

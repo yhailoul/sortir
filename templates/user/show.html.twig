@@ -5,13 +5,7 @@
 {% block body %}
     <h1>{{ user.username }}'s informations</h1>
 <div class="">
-    {%if user.photo %}
-        <img src="{{ asset('uploads/' ~ user.photo) }}" alt="{{ user.username }} profile photo"
-        style="width: 200px; height: 200px;">
-    {% else %}
-        <img src="{{ asset('uploads/imageProfilDefault.jpg' ) }}" alt="{{ user.username }} profile photo"
-             style="width: 200px; height: 200px;">
-    {% endif %}
+    <img src="{{ asset(photoPath) }}" alt="profile picture" style="width: 200px; height: 200px;">
     {# je dois me rappeler de mettre la photo #}
 
     <table class="">
