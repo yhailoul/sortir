@@ -1,46 +1,90 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}User{% endblock %}
+{% block title %}{{ user.username }}'s profile{% endblock %}
 
 {% block body %}
-    <h1>{{ user.username }}'s informations</h1>
-<div class="">
-    <img src="{{ asset(photoPath) }}" alt="profile picture" style="width: 200px; height: 200px;">
-    {# je dois me rappeler de mettre la photo #}
 
-    <table class="">
-        <tbody>
-        <tr>
-            <th>Firstname</th>
-            <td>{{ user.firstname }}</td>
-        </tr>
-        <tr>
-            <th>Lastname</th>
-            <td>{{ user.lastname }}</td>
-        </tr>
-        <tr>
-            <th>Campus</th>
-            <td>{{ user.campus.name }}</td>
-        </tr>
-        <tr>
-            <th>Username</th>
-            <td>{{ user.username }}</td>
-        </tr>
-        <tr>
-            <th>Email</th>
-            <td>{{ user.email }}</td>
-        </tr>
-        <tr>
-            <th>Phone number</th>
-            <td>{{ user.phone }}</td>
-        </tr>
-        </tbody>
-    </table>
-</div>
+    <div class="min-h-screen p-8 flex justify-center">
+
+        <div
+            class="absolute top-[0%] right-[10%] w-[300px] h-[600px] bg-[#FF7F00]/20 rounded-[50%] blur-[50px] pointer-events-none"></div>
+
+        <div
+            class="absolute bottom-[-10%] right-[10%] w-[400px] h-[500px] bg-[#256AFF]/30 rounded-[50%] blur-[50px] pointer-events-none"></div>
+
+        <div
+            class="absolute top-[-30%] left-[0%] w-[500px] h-[600px] bg-[#7349F3]/20 rounded-[50%] blur-[50px] pointer-events-none"></div>
 
 
-    <a href="{{ path('events_listFilters') }}">back to list</a>
-    {% if is_granted('ROLE_ADMIN') or app.user.email==user.email%}
-    <a href="{{ path('app_user_edit', {'id': user.id}) }}">edit</a>
-    {% endif %}
+        <div class="flex flex-col z-10">
+
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">{{ user.username }}</h1>
+            <div class="flex items-start gap-4">
+
+                <div class="bg-white rounded-xl shadow p-4">
+                    <img src="{{ asset(photoPath) }}" alt="profile picture"
+                         class="w-32 h-32 rounded-xl object-cover shadow">
+                </div>
+
+                <div class="bg-white rounded-2xl shadow p-8 flex flex-col gap-5 w-[600px]">
+
+                    {# Prénom + Nom #}
+                    <div class="flex gap-4">
+                        <div class="flex flex-col flex-1">
+                            <p class="text-sm font-medium text-gray-700 mb-1">First name</p>
+                            <div class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-gray-800 text-sm">
+                                {{ user.firstname }}
+                            </div>
+                        </div>
+                        <div class="flex flex-col flex-1">
+                            <p class="text-sm font-medium text-gray-700 mb-1">Last name</p>
+                            <div class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-gray-800 text-sm">
+                                {{ user.lastname }}
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Email #}
+                    <div class="flex flex-col">
+                        <p class="text-sm font-medium text-gray-700 mb-1">Email address</p>
+                        <div class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-gray-800 text-sm">
+                            {{ user.email }}
+                        </div>
+                    </div>
+
+                    {# Phone #}
+                    <div class="flex flex-col">
+                        <p class="text-sm font-medium text-gray-700 mb-1">Phone</p>
+                        <div class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-gray-800 text-sm">
+                            {{ user.phone }}
+                        </div>
+                    </div>
+
+                    {# Campus #}
+                    <div class="flex flex-col">
+                        <p class="text-sm font-medium text-gray-700 mb-1">Campus</p>
+                        <div
+                            class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-gray-800 text-sm flex justify-between items-center">
+                            {{ user.campus.name }}
+                        </div>
+                    </div>
+
+                    {# Boutons #}
+                    <div class="flex gap-3">
+                        <a href="{{ path('events_listFilters') }}"
+                           class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition">
+                            Back
+                        </a>
+                        {% if is_granted('ROLE_ADMIN') or app.user.email == user.email %}
+                            <a href="{{ path('app_user_edit', {'id': user.id}) }}"
+                               class="border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-semibold px-5 py-2.5 rounded-lg transition">
+                                Edit
+                            </a>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

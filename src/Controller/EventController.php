@@ -81,6 +81,8 @@ class EventController extends AbstractController
         EventManager $eventManager
     ): Response
     {
+        /** @var User $user */
+        $user = $this->getUser();
         $event = new Event();
         $eventForm = $this->createForm(EventType::class, $event);
 
@@ -90,7 +92,7 @@ class EventController extends AbstractController
             $buttonClicked = $eventForm->getClickedButton();
             $action = $buttonClicked?->getName() ?? 'save'; // Renvoie save par défaut si null pour éviter l'erreur
             $imageFile = $eventForm->get('eventPhoto')->getData();
-            $eventManager->handleEvent($event, $this->getUser(), $imageFile, $action);
+            $eventManager->handleEvent($event, $user, $imageFile, $action);
 
             $this->addFlash('success', 'Event created!');
 
@@ -127,11 +129,13 @@ class EventController extends AbstractController
 
     #[Route('/edit/{id}', name: 'edit', requirements: ['id' => '\d+'])]
     public function editEvent(
-        Event           $event,
-        Request         $request,
-        EventManager    $eventManager
+        Event        $event,
+        Request      $request,
+        EventManager $eventManager
     ): Response
     {
+        /** @var User $user */
+        $user = $this->getUser();
 
         if (!$this->isGranted('EVENT_EDIT', $event)) {
             $this->addFlash('danger', 'You do not have permission to modify this event.');
@@ -144,7 +148,7 @@ class EventController extends AbstractController
             $buttonClicked = $eventForm->getClickedButton();
             $action = $buttonClicked?->getName() ?? 'save'; // Renvoie save par défaut si null pour éviter l'erreur
             $imageFile = $eventForm->get('eventPhoto')->getData();
-            $eventManager->handleEvent($event, $this->getUser(), $imageFile, $action);
+            $eventManager->handleEvent($event, $user, $imageFile, $action);
             $this->addFlash('success', 'Event edited!');
 
             return $this->redirectToRoute('events_detail', ['id' => $event->getId()]);
@@ -194,6 +198,7 @@ class EventController extends AbstractController
     {
         $user = $this->getUser();
 
+        /** @var User $user */
         //Récupère soit le texte de l'erreur soit null si tout s'est bien passé
         $error = $eventRegistrationMananger->subscribeCheck($event, $user);
 
@@ -213,6 +218,7 @@ class EventController extends AbstractController
         $user = $this->getUser();
 
         //Récupère soit le texte de l'erreur soit null si tout s'est bien passé
+        /** @var User $user */
         $error = $eventRegistrationMananger->unsubscribeCheck($event, $user);
 
         //Si erreur
