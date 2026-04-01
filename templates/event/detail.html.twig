@@ -1,8 +1,11 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <h2>The Event is {{ event.eventStatus.label }}</h2>
-    <h2>Details of {{ event.name }}</h2>
+    <section class="flex flex-col justify-center p-4 m-16">
+    <div class=" mx-auto w-full max-w-4xl">
+
+    <h2 class="text-xl font-bold">The Event is {{ event.eventStatus.label }}</h2>
+    <h2 class="text-lg">Details</h2>
 
     <div>
         {% if event.eventStatus.label|lower == "canceled" %}
@@ -15,22 +18,35 @@
             </div>
 
         {% else %}
-            <div>
-                <p>Name of the event : {{ event.name }}</p>
-                <p>Dates and hours of this one : {{ event.dateStartHour|date('d-m-Y H:i') }}
-                    to {{ event.dateEndHour|date('d-m-Y H:i') }}</p>
-                <p>Registration deadline : {{ event.registrationDeadline|date('d-m-Y H:i') }}</p>
-                <p>Number of participants : {{ event.nbMaxRegistrations }}</p>
-                <p>Duration : {{ event.duration.format('%d days, %h hours, %m minutes') }}</p>
-                <p>Description : {{ event.infosEvent }}</p>
-                <p>Campus : {{ event.campus.name }}</p>
-                <p>Place : {{ event.eventLocation.name }}</p>
-                <p>Street : {{ event.eventLocation.street }}</p>
-                <p>Zipcode : {{ event.eventLocation.city.zipCode }}</p>
-                <p>Latitude : {{ event.eventLocation.latitude }}</p>
-                <p>Longitude : {{ event.eventLocation.longitude }}</p>
-                <img src="{{ asset('uploads/' ~ event.photo) }}" alt="{{ event.name }}">
+        <div class="
+        w-[40vw] flex
 
+        flex flex-row gap-4 items-start">
+            <div class="w-[40vw] flex
+                flex-shrink-0
+                flex flex-col
+                items-center justify-center
+                p-2">
+            <img src="{{ asset('uploads/' ~ event.photo) }}" alt="{{ event.name }}" class="rounded-lg">
+            </div>
+            <div class="flex-1 min-w-[320px] rounded-md bg-white p-6">
+                <p class="font-semibold">Name of the event : </p><p>{{ event.name }}</p>
+                <p class="font-semibold">Dates and hours of this one : </p> <p>{{ event.dateStartHour|date('d-m-Y H:i') }}
+                    to {{ event.dateEndHour|date('d-m-Y H:i') }}</p>
+                <p class="font-semibold">Registration deadline :</p> <p>{{ event.registrationDeadline|date('d-m-Y H:i') }}</p>
+                <p class="font-semibold">Number of participants :</p><p> {{ event.nbMaxRegistrations }}</p>
+                <p class="font-semibold">Duration : </p><p>{{ event.duration.format('%d days, %h hours, %m minutes') }}</p>
+                <p class="font-semibold">Description : </p><p>{{ event.infosEvent }}</p>
+                <p class="font-semibold">Campus : </p><p>{{ event.campus.name }}</p>
+                <p class="font-semibold">Place : </p><p>{{ event.eventLocation.name }}</p>
+                <p class="font-semibold">Street : </p><p>{{ event.eventLocation.street }}</p>
+                <p class="font-semibold">Zipcode : </p><p>{{ event.eventLocation.city.zipCode }}</p>
+                {% if event.eventLocation.latitude != null or event.eventLocation.latitude != null  %}
+                <p class="font-semibold">Latitude : {{ event.eventLocation.latitude }}</p><p>{{ event.eventLocation.latitude }}</p>
+                <p class="font-semibold">Longitude : </p><p>{{ event.eventLocation.longitude }}</p>
+                {% endif %}
+
+                <p class="font-semibold">Participants</p>
                 {% for participant in event.participantList %}
                     <p>{{ loop.index }} : {{ participant.username }}</p>
                 {% endfor %}
@@ -38,21 +54,79 @@
 
                 <div>
                 {% if event.participantList|length < event.nbMaxRegistrations and event.eventStatus.label|lower =="open"  %}
-                    <a href="{{ path('events_register', {'id': event.id}) }}">Register</a>
+                    <button class="border
+                border-slate-200
+                rounded-lg
+                py-2
+                px-4
+                mt-2
+                bg-sky-500
+                cursor-pointer
+                transition-colors
+                hover:bg-sky-600
+                text-white">
+                        <a href="{{ path('events_register', {'id': event.id}) }}">Register</a>
+                    </button>
                 {% else %}
-                    <h3>The event participant list is at full capacity. You cannot sign up for it :( </h3>
+                    <h3 class="font-bold">The event participant list is at full capacity. You cannot sign up for it :( </h3>
                 {% endif %}
                 {% if app.user.email == event.organizer.email %}
-                    <a href="{{ path('events_edit', {'id': event.id}) }}">Update</a>
-                    <a href="{{ path('events_cancelled', {'id': event.id}) }}">Canceled</a>
+                    <button class="
+                    border
+                    border-slate-200
+                    rounded-lg
+                    py-2
+                    px-4
+                    mt-2
+                    bg-violet-500
+                    cursor-pointer
+                    transition-colors
+                    hover:bg-violet-600
+                    text-white">
+                        <a onclick="confirm('are you sure you want to edit the event ?')" href="{{ path('events_edit', {'id': event.id}) }}">Update</a>
+                    </button>
+                    <button class="
+                    border
+                border-slate-200
+                rounded-lg
+                py-2
+                px-4
+                mt-2
+                bg-red-500
+                cursor-pointer
+                transition-colors
+                hover:bg-red-600
+                text-white
+
+">
+                        <a onclick="confirm('are you sure you want to cancel the event ?')" href="{{ path('events_cancelled', {'id': event.id}) }}">Canceled</a>
+                    </button>
                 {% endif%}
                 {% if app.user in event.participantList and date('now')< event.registrationDeadline %}
-                    <a href="{{ path('events_unsubscribe', {'id': event.id}) }}">Unsubscribe</a>
+                    <button class="
+                        border
+                border-slate-200
+                rounded-lg
+                py-2
+                px-4
+                mt-2
+                bg-gray-500
+                cursor-pointer
+                transition-colors
+                hover:bg-gray-50
+                text-black
+
+">
+                        <a onclick="confirm('are you sure you want to unsubscribe ?')" href="{{ path('events_unsubscribe', {'id': event.id}) }}">Unsubscribe</a>
+                    </button>
+
                 {% endif %}
                 </div>
 
             </div>
         {% endif %}
     </div>
-
+    </div>
+        </div>
+</section>
 {% endblock %}
