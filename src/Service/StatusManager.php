@@ -47,4 +47,15 @@ class StatusManager
             $this->entityManager->persist($event);
         }
     }
+
+    public function cancelEvent(Event $event): void
+    {
+
+        $cancelStatus = $this->statusTab['Canceled'];
+
+        $event->setEventStatus($cancelStatus);
+        $this->entityManager->persist($event);
+        $this->entityManager->flush();
+
+    }
 }
