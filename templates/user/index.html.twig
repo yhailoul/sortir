@@ -3,7 +3,7 @@
 {% block title %}Users{% endblock %}
 
 {% block body %}
-    <h1>Users list </h1>
+    <h1 class="text-neutral-500 text-lg " >Users list </h1>
     <br>
     {% if is_granted('ROLE_ADMIN') and is_granted('ROLE_USER') %}
         <div class="flex justify-center p-4">
@@ -42,12 +42,12 @@
                 <th scope ="col" class="px-6 py-3">Username</th>
                 <th scope ="col" class="px-6 py-3">Roles</th>
                 <th scope ="col" class="px-6 py-3">Activity Status</th>
-                <th>Action</th>
+                <th scope ="col" class="px-6 py-3">Action</th>
             </tr>
         </thead>
         <tbody>
         {% for user in users %}
-            <tr class="bg-white border-b hover:bg-blue-50">
+{#            <tr class="bg-white border-b hover:bg-blue-50">#}
                 <td class="px-6 py-4">{{ user.id }}</td>
                 <td class="px-6 py-4">{{ user.email }}</td>
                 <td class="px-6 py-4">{{ user.username }}</td>
