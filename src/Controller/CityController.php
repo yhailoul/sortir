@@ -66,7 +66,7 @@ final class CityController extends AbstractController
         }return $this->render('city/cityList.html.twig', ['newCityForm'=>$form]);
     }
 
-    #[Route('/delete/{id}', name: 'city_delete', requirements: ['id' => '\d+'])]
+    #[Route('/city/delete/{id}', name: 'city_delete', requirements: ['id' => '\d+'])]
     #[isGranted('ROLE_ADMIN')]
     public function deleteEvent(
         int                    $id,
@@ -86,7 +86,7 @@ final class CityController extends AbstractController
         $this->addFlash('success', 'city deleted!');
         return $this->redirectToRoute('city_list');
     }
-    #[Route('/edit/{id}', name: 'city_edit', requirements: ['id' => '\d+'])]
+    #[Route('/city/edit/{id}', name: 'city_edit', requirements: ['id' => '\d+'])]
     #[isGranted('ROLE_ADMIN')]
     public function editCity(
         int                    $id,
@@ -107,7 +107,7 @@ final class CityController extends AbstractController
         }
         return $this->render('city/city_edit.html.twig', [
             'city' => $city,
-            'form' => $cityForm,
+            'newCityForm' => $cityForm,
         ]);
     }
 }

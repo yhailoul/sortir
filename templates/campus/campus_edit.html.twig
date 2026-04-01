@@ -3,13 +3,36 @@
 {% block title %}Edit Campus{% endblock %}
 
 {% block body %}
-    <h2>Edit campus</h2>
-
-    <section>
-        {{ form_start(form) }}
-        {{ form_widget(form) }}
-        <button type="submit">Update Campus</button>
-        {{ form_end(form) }}
+    <section class="flex flex-col justify-center p-4 mb-16">
+        <div class=" mx-auto w-full max-w-4xl" >
+            <h3 class="mt-4">Create a new city</h3>
+            {{ form_start(campusForm) }}
+            {{ form_label(campusForm.name) }}
+            {{ form_widget(campusForm.name, {'attr':{'class':'
+        w-full
+        text-sm px-3 py-2
+        p-4
+        rounded-lg
+        border border-slate-200
+        focus:border-violet-400 outline-none
+        mt-2
+            '}}) }}
+            <button
+                class="border
+                border-slate-200
+                rounded-lg
+                mb-4
+                py-2
+                px-4
+                mt-2
+                text-white
+                bg-violet-500
+                hover:bg-violet-600
+                hover:text-white"
+            >Edit Campus</button>
+            <br>
+            {{ form_end(campusForm) }}
+        </div>
     </section>
 
 {% endblock %}

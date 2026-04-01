@@ -3,13 +3,46 @@
 {% block title %}Edit City{% endblock %}
 
 {% block body %}
-    <h2>Edit City</h2>
-
-    <section>
-        {{ form_start(form) }}
-        {{ form_widget(form) }}
-        <button type="submit">Update City</button>
-        {{ form_end(form) }}
+    <section class="flex flex-col justify-center p-4 mb-16">
+        <div class=" mx-auto w-full max-w-4xl" >
+            <h3 class="mt-4">Create a new city</h3>
+            {{ form_start(newCityForm) }}
+            {{ form_label(newCityForm.name) }}
+            {{ form_widget(newCityForm.name, {'attr':{'class':'
+        w-full
+        text-sm px-3 py-2
+        p-4
+        rounded-lg
+        border border-slate-200
+        focus:border-violet-400 outline-none
+        mt-2
+            '}}) }}
+            {{ form_label(newCityForm.zipCode) }}
+            {{ form_widget(newCityForm.zipCode, {'attr':{'class':'
+        w-full
+        text-sm px-3 py-2
+        p-4
+        rounded-lg
+        border border-slate-200
+        focus:border-violet-400 outline-none
+        mt-2
+            '}}) }}
+            <button
+                class="border
+                border-slate-200
+                rounded-lg
+                mb-4
+                py-2
+                px-4
+                mt-2
+                text-white
+                bg-violet-500
+                hover:bg-violet-600
+                hover:text-white"
+            >Edit City</button>
+            <br>
+            {{ form_end(newCityForm) }}
+        </div>
     </section>
 
 {% endblock %}

@@ -43,7 +43,7 @@ final class CampusController extends AbstractController
     }
 
 
-    #[Route('/delete/{id}', name: 'campus_delete', requirements: ['id' => '\d+'])]
+    #[Route('/campus/delete/{id}', name: 'campus_delete', requirements: ['id' => '\d+'])]
     #[isGranted('ROLE_ADMIN')]
     public function deleteEvent(
         int                    $id,
@@ -63,7 +63,7 @@ final class CampusController extends AbstractController
         $this->addFlash('success', 'campus deleted!');
         return $this->redirectToRoute('campus_list');
     }
-    #[Route('/edit/{id}', name: 'campus_edit', requirements: ['id' => '\d+'])]
+    #[Route('/campus/edit/{id}', name: 'campus_edit', requirements: ['id' => '\d+'])]
     #[isGranted('ROLE_ADMIN')]
     public function editCampus(
         int                    $id,
@@ -85,7 +85,7 @@ final class CampusController extends AbstractController
         return $this->render('campus/campus_edit.html.twig', [
 
             'campus' => $campus,
-            'form' => $campusForm,
+            'campusForm' => $campusForm,
         ]);
     }
 }
