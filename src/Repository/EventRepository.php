@@ -30,6 +30,7 @@ class EventRepository extends ServiceEntityRepository
         dump('SQL REçU: ' . $qb->getDQL());
         dump('paramètres : ' . $qb->getParameters());
 
+
         if ($campus !== null) {
             if ($campus->getId()) {
                 $qb->andWhere('e.campus = :campus')
@@ -46,15 +47,14 @@ class EventRepository extends ServiceEntityRepository
             $end = clone $filter->getStartDate();
             $end->setTime(23, 59, 59); // Fin de journée
 
-            $qb->andWhere('e.dateStartHour BETWEEN :startDate AND :endDate')
-                ->setParameter('startDate', $start)
-                ->setParameter('endDate', $end);
+            $qb->andWhere('e.dateStartHour >= :startDate ')
+                ->setParameter('startDate', $start);
         }
         if ($filter->getEndDate()) {
             $end = clone $filter->getEndDate();
             $end->setTime(23, 59, 59); // Fin de journée : 23:59:59
 
-            $qb->andWhere('e.dateEndHour <= :endDate')
+            $qb->andWhere('e.dateStartHour <= :endDate')
                 ->setParameter('endDate', $end);
         }
 
@@ -80,7 +80,7 @@ class EventRepository extends ServiceEntityRepository
         dump($query->getParameters());
         return $qb->getQuery()->getResult();
 
-   }
+    }
 
     public function AllEvents()
     {

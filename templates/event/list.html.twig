@@ -57,7 +57,6 @@
                         {# Date #}
                         <div
                             class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg bg-white text-sm text-slate-500">
-                            <i class="fa-regular fa-calendar text-xs"></i>
                             {{ form_widget(filterForm.startDate, {'attr': {'class': 'outline-none border-none text-sm bg-transparent cursor-pointer w-32'}}) }}
                             <span>→</span>
                             {{ form_widget(filterForm.endDate, {'attr': {'class': 'outline-none border-none text-sm bg-transparent cursor-pointer w-32'}}) }}
@@ -106,10 +105,10 @@
             {# ********************************** #}
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10 mt-10 mx-10">
-                {% set displayEvents = events is not empty ? events : eventAll %}
+                {% set displayEvents = isFiltered ? events : eventAll %}
 
                 {% if displayEvents is empty %}
-                    <p class="text-center col-span-full py-10">Aucun événement trouvé</p>
+                    <p class="text-center col-span-full py-10">No events found</p>
                 {% else %}
                     {% for event in displayEvents %}
                         {% if event.eventStatus.label|lower != "historized" and (event.eventStatus.label != "In creation" or app.user == event.organizer) %}
