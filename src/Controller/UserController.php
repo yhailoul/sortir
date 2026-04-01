@@ -6,6 +6,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\UserType;
 use App\Repository\UserRepository;
+use App\Security\Voter\UserVoter;
 use App\Service\AvatarService;
 use App\Service\FileUploader;
 use App\Service\UserCsvImporter;
@@ -22,7 +23,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 #[Route('/user')]
 final class UserController extends AbstractController
 {
-    public function __construct(private readonly UserCsvImporter $userCsvImporter, private readonly ValidatorInterface $validator)
+    public function __construct(private readonly ValidatorInterface $validator)
     {
     }
 
@@ -37,7 +38,6 @@ final class UserController extends AbstractController
     }
 
     #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
-    #[isGranted('ROLE_ADMIN')]
     public function new(Request                     $request,
                         EntityManagerInterface      $entityManager,
                         UserPasswordHasherInterface $userPasswordHasher,
@@ -45,6 +45,8 @@ final class UserController extends AbstractController
                         AvatarService               $defaultAvatar,
                         UserCsvImporter             $csvImporter): Response
     {
+        $this->denyAccessUnlessGranted(UserVoter::CREATE, null);
+
         $user = new User();
 
         $uploadedFiles = $request->files->get('user');
@@ -122,37 +124,33 @@ final class UserController extends AbstractController
     #[Route('/{id}/edit', name: 'app_user_edit', methods: ['GET', 'POST'])]
     public function edit(Request                     $request,
                          Security                    $security,
-                         int                         $id,
-                         UserRepository              $userRepository,
                          EntityManagerInterface      $entityManager,
                          FileUploader                $fileUploader,
                          UserPasswordHasherInterface $passwordHasher,
+                         User                        $user,
                          AvatarService               $defaultAvatar): Response
     {
-        $user = $userRepository->find($id);
-        $authUser = $security->getUser();
-        if ($user === $authUser) {
-            $form = $this->createForm(UserType::class, $user);
-            $form->handleRequest($request);
+        $this->denyAccessUnlessGranted(UserVoter::EDIT, $user);
 
-            if ($form->isSubmitted() && $form->isValid()) {
-                $checkPassword = $form->get('password')->getData();
+        $form = $this->createForm(UserType::class, $user);
+        $form->handleRequest($request);
 
-                if (!empty($checkPassword)) {
-                    $security->login($user);
-                    $hashedPassword = $passwordHasher->hashPassword($user, $checkPassword);
-                    $user->setPassword($hashedPassword);
-                }
+        if ($form->isSubmitted() && $form->isValid()) {
+            $checkPassword = $form->get('password')->getData();
 
-                $defaultAvatar->correctionPhotoProfile($user);
-                $this->handleFileUploads($user, $form, $fileUploader);
-                $entityManager->flush();
-
-                return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+            if (!empty($checkPassword)) {
+                $hashedPassword = $passwordHasher->hashPassword($user, $checkPassword);
+                $user->setPassword($hashedPassword);
+                $security->login($user);
             }
-        } else {
-            throw $this->createAccessDeniedException('You are not allowed to edit this user.');
+
+            $defaultAvatar->correctionPhotoProfile($user);
+            $this->handleFileUploads($user, $form, $fileUploader);
+            $entityManager->flush();
+
+            return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
         }
+
         return $this->render('user/edit.html.twig', [
             'user' => $user,
             'form' => $form,
@@ -160,16 +158,12 @@ final class UserController extends AbstractController
     }
 
     #[Route('/{id}/activate/admin', name: 'app_user_activate_admin', methods: ['GET', 'POST'])]
-    #[isGranted('ROLE_ADMIN')]
-    public function Activate(
+    public function activate(
         EntityManagerInterface $entityManager,
-        UserRepository         $repository,
-        int                    $id): Response
+        User                   $user): Response
     {
-        $user = $repository->find($id);
-        if (!$user) {
-            throw $this->createNotFoundException("User not found");
-        }
+
+        $this->denyAccessUnlessGranted(UserVoter::ACTIVATE, $user);
 
         if (!$user->isActive()) {
             $user->setActive(true);
@@ -185,21 +179,11 @@ final class UserController extends AbstractController
     }
 
     #[Route('/{id}/deactivate/admin', name: 'app_user_deactivate_admin', methods: ['GET', 'POST'])]
-    #[isGranted('ROLE_ADMIN')]
-    public function Deactivate(Security               $security,
-                               EntityManagerInterface $entityManager,
-                               UserRepository         $repository,
-                               int                    $id): Response
+    public function disable(EntityManagerInterface $entityManager,
+                               User                   $user): Response
     {
-        $user = $repository->find($id);
-        $authUser = $security->getUser();
-        if (!$user) {
-            throw $this->createNotFoundException("User not found");
-        }
-        if ($user === $authUser) {
-            $this->addFlash('warning', 'You cannot deactivate your own account');
-            return $this->redirectToRoute('app_user_index');
-        }
+        $this->denyAccessUnlessGranted(UserVoter::DISABLE, $user);
+
         if ($user->isActive()) {
             $user->setActive(false);
             $entityManager->persist($user);
@@ -212,26 +196,17 @@ final class UserController extends AbstractController
     }
 
     #[Route('/delete/{id}', name: 'app_user_delete', methods: ['GET', 'POST'])]
-    #[isGranted('ROLE_ADMIN')]
     public function delete(
-        int                    $id,
-        UserRepository         $repository,
-        Security               $security,
+        User                   $user,
         EntityManagerInterface $entityManager): Response
     {
-        $user = $repository->find($id);
-        $authUser = $security->getUser();
-        if (!$user) {
-            throw $this->createNotFoundException("User not found");
-        }
-        if ($user === $authUser) {
-            $this->addFlash('warning', 'You cannot delete your own account');
-            return $this->redirectToRoute('app_user_index');
-        } else {
-            $entityManager->remove($user);
-            $entityManager->flush();
-            $this->addFlash('success', 'You have deleted user:' . $user->getUsername());
-        }
+
+        $this->denyAccessUnlessGranted(UserVoter::DELETE, $user);
+
+        $entityManager->remove($user);
+        $entityManager->flush();
+        $this->addFlash('success', 'You have deleted user:' . $user->getUsername());
+
 
         return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
     }
