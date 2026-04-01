@@ -165,7 +165,7 @@
                 </table>
             </div>
             <br>
-        </section>
+        </div>
     </div>
 
     <script>
@@ -173,4 +173,7 @@
 
 {% endblock %}
 
-
+{% block javascripts %}
+        {{ parent() }}
+        {% include 'event/_dates_filters.js.html.twig' %}
+{% endblock %}
