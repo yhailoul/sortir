@@ -26,7 +26,7 @@ final class UserController extends AbstractController
     }
 
     #[Route(name: 'app_user_index', methods: ['GET'])]
-    #[isGranted('ROLE_ADMIN')]
+    #[IsGranted('ROLE_ADMIN')]
     public function index(UserRepository $userRepository): Response
     {
         return $this->render('user/index.html.twig', [
@@ -97,12 +97,10 @@ final class UserController extends AbstractController
     #[Route('/{id}', name: 'app_user_show', methods: ['GET'])]
     public function show(
         User                   $user,
-        EntityManagerInterface $entityManager,
         AvatarService          $defaultAvatar): Response
     {
         if (!$user->getPhoto()) {
             $defaultAvatar->correctionPhotoProfile($user);
-            $entityManager->flush();
         }
 
         $photoPath = $defaultAvatar->resolvePhotoPath($user->getPhoto());

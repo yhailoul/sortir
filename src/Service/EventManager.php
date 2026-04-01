@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Event;
+use App\Entity\Status;
 use App\Entity\User;
 use App\Repository\StatusRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -44,9 +45,9 @@ readonly class EventManager
         }
 
         $label = match ($action) {
-            'publish' => 'Open',
-            'cancel' => 'Canceled',
-            'save' => 'In creation',
+            'publish' => Status::OPEN,
+            'cancel' => Status::CANCELED,
+            'save' => Status::IN_CREATION,
         };
 
         $status = $this->statusRepository->findOneBy(['label' => $label]);
