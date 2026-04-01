@@ -8,14 +8,12 @@ use App\Form\UserType;
 use App\Repository\UserRepository;
 use App\Security\Voter\UserVoter;
 use App\Service\AvatarService;
-use App\Service\FileUploader;
 use App\Service\UserCsvImporter;
+use App\Service\UserManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -38,12 +36,9 @@ final class UserController extends AbstractController
     }
 
     #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
-    public function new(Request                     $request,
-                        EntityManagerInterface      $entityManager,
-                        UserPasswordHasherInterface $userPasswordHasher,
-                        FileUploader                $fileUploader,
-                        AvatarService               $defaultAvatar,
-                        UserCsvImporter             $csvImporter): Response
+    public function new(Request         $request,
+                        UserManager     $userManager,
+                        UserCsvImporter $csvImporter): Response
     {
         $this->denyAccessUnlessGranted(UserVoter::CREATE, null);
 
@@ -85,13 +80,7 @@ final class UserController extends AbstractController
 
             } else if ($userForm->isValid()) {
                 $plainPassword = $userForm->get('password')->getData();
-                $user->setRoles(['ROLE_USER']);
-                $user->setActive(true);
-                $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
-                $this->handleFileUploads($user, $userForm, $fileUploader);
-                $defaultAvatar->correctionPhotoProfile($user);
-                $entityManager->persist($user);
-                $entityManager->flush();
+                $userManager->createUser($user, $plainPassword, $userForm->get('photo')->getData());
                 $this->addFlash('success', 'User created successfully.');
                 return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
             }
@@ -124,13 +113,10 @@ final class UserController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_user_edit', methods: ['GET', 'POST'])]
-    public function edit(Request                     $request,
-                         Security                    $security,
-                         EntityManagerInterface      $entityManager,
-                         FileUploader                $fileUploader,
-                         UserPasswordHasherInterface $passwordHasher,
-                         User                        $user,
-                         AvatarService               $defaultAvatar): Response
+    public function edit(Request                $request,
+                         UserManager            $userManager,
+                         User                   $user,
+                         AvatarService          $defaultAvatar): Response
     {
         $this->denyAccessUnlessGranted(UserVoter::EDIT, $user);
 
@@ -140,18 +126,9 @@ final class UserController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            if (!$user->getPhoto()) {
-                $defaultAvatar->correctionPhotoProfile($user);
-            }
             $checkPassword = $form->get('password')->getData();
-            if (!empty($checkPassword)) {
-                $hashedPassword = $passwordHasher->hashPassword($user, $checkPassword);
-                $user->setPassword($hashedPassword);
-                $security->login($user);
-            }
 
-            $this->handleFileUploads($user, $form, $fileUploader);
-            $entityManager->flush();
+            $userManager->updateUser($user, $checkPassword, $form->get('photo')->getData());
 
             return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -217,13 +194,5 @@ final class UserController extends AbstractController
 
 
         return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
-    }
-
-    private function handleFileUploads(User $user, $form, FileUploader $fileUploader): void
-    {
-        $imageFile = $form->get('photo')->getData();
-        if ($imageFile) {
-            $user->setPhoto($fileUploader->upload($imageFile));
-        }
     }
 }
