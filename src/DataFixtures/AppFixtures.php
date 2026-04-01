@@ -40,7 +40,7 @@ class AppFixtures extends Fixture
 
         $users = $this->user($manager, $campusList);
 
-        $this->event($manager, $users, $statusList, $locationList, $campusList );
+        $this->event($manager, $users, $statusList, $locationList, $campusList);
 
         $manager->flush();
     }
