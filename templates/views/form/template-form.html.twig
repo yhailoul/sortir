@@ -10,6 +10,7 @@
 
     <div class="flex flex-row flex-wrap gap-6 space-x-6 items-start p-4">
 
+
         <div class="w-[20vw] flex
                 aspect-square
                 rounded-md
@@ -31,7 +32,7 @@
             mt-24'}}) }}
         </div>
 
-        <div class="flex-1 min-w-[320px] rounded-md bg-white p-6">
+        <div class="flex-1 min-w-[320px] rounded-md bg-white p-6 relative z-10 w-full">
             <div class="mb-4">
                 {# name #}
                 {{ form_label(form.name) }}
@@ -156,21 +157,6 @@
             </div>
 
 
-{#                #}{# eventStatus #}
-{#                {{ form_label(form.eventStatus) }}#}
-{#                {{ form_errors(form.eventStatus) }}#}
-{#                {{ form_widget(form.eventStatus, {'attr':{'class': '#}
-{#                w-full#}
-{#                text-sm#}
-{#                px-3#}
-{#                py-2#}
-{#                border border-slate-200#}
-{#                rounded-lg#}
-{#                focus:border-violet-400#}
-{#                outline-none#}
-{#                bg-white#}
-{#                cursor-pointer#}
-{#'}}) }}#}
             {% block buttonLabel %}{% endblock %}
         </div>
 

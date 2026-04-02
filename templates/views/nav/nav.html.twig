@@ -17,10 +17,12 @@
                 <ul class="flex gap-4 list-none p-0 m-0">
                     <li><a href="{{ path('events_listFilters') }}" class="{{ app.request.attributes.get('_route') == 'events_listFilters' ? 'text-[#7349F3]'}}">Home</a></li>
                     <li><a href="{{ path('events_create') }}" class="{{ app.request.attributes.get('_route') == 'events_create' ? 'text-[#7349F3]'}}"> Create an event</a></li>
+                    {% if is_granted('ROLE_ADMIN') %}
                     <li><a href="{{ path('city_list') }}" class="{{ app.request.attributes.get('_route') == 'city_list' ? 'text-[#7349F3]'}}">City</a></li>
                     <li><a href="{{ path('campus_list') }}" class="{{ app.request.attributes.get('_route') == 'campus_list' ? 'text-[#7349F3]'}}">Campus</a></li>
                     <li><a href="{{ path('app_user_index') }}" class="{{ app.request.attributes.get('_route') == 'app_user_index' ? 'text-[#7349F3]'}}">See Users</a></li>
                     <li><a href="{{ path('app_user_new') }}" class="{{ app.request.attributes.get('_route') == 'app_user_new' ? 'text-[#7349F3]'}}">Create Users</a></li>
+                    {% endif %}
                 </ul>
             </li>
 

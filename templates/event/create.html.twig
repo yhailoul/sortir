@@ -3,9 +3,15 @@
     Create Event
 {% endblock %}
 {% block body %}
-<div class="bg-[radial-gradient(circle,rgba(238,174,202,1)_12%,rgba(255,255,255,1)_100%)]
+<div class="
             min-h-screen
             flex items-center justify-center p-4">
+    <div
+        class="absolute top-[0%] right-[10%] w-[500px] h-[600px] bg-[#7349F3]/20 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
+
+    <div
+        class="absolute bottom-[-10%] right-[10%] w-[600px] h-[500px] bg-cyan-300/30 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
+    <div class="relative z-10 w-full">
     {% embed 'views/form/template-form.html.twig' with { form : eventForm } %}
         {% block formTitle %} Create an event ! {% endblock %}
         {% block buttonLabel %}
@@ -53,6 +59,7 @@
 
         {% endblock %}
     {% endembed %}
+    </div>
 </div>
 {% endblock %}
 
