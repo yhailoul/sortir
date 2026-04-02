@@ -14,10 +14,12 @@
                 <ul class="flex gap-4 list-none p-0 m-0">
                     <li><a href="{{ path('events_listFilters') }}">Home</a></li>
                     <li><a href="{{ path('events_create') }}">Create an event</a></li>
-                    <li><a href="">City</a></li>
-                    <li><a href="">Campus</a></li>
+                    {% if is_granted('ROLE_ADMIN') %}
+                    <li><a href="{{ path('city_list') }}">City</a></li>
+                    <li><a href="{{ path('campus_list') }}">Campus</a></li>
                     <li><a href="{{ path('app_user_index') }}">See Users</a></li>
                     <li><a href="{{ path('app_user_new') }}">Create Users</a></li>
+                    {% endif %}
                 </ul>
             </li>
 

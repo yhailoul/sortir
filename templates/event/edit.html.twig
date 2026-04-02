@@ -1,9 +1,58 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
+    <div>
+        <div
+            class="absolute top-[0%] right-[10%] w-[500px] h-[600px] bg-[#7349F3]/20 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
+
+        <div
+            class="absolute bottom-[-10%] right-[10%] w-[600px] h-[500px] bg-cyan-300/30 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
+    </div>
     {% embed 'views/form/template-form.html.twig' with { form : eventFormEdit } %}
         {% block formTitle %} Event updating {% endblock %}
-        {% block buttonLabel %}{% endblock %}
+        {% block buttonLabel %}
+            <div class="btn-group flex gap-4 mt-4">
+                {{ form_widget(form.save, {'attr':{'class':'
+                border
+                border-slate-200
+                rounded-lg
+                py-2
+                px-4
+                mt-2
+                bg-violet-500
+                cursor-pointer
+                transition-colors
+                hover:bg-violet-600
+                text-white
+'}}) }}
+                {{ form_widget(form.publish, {'attr':{'class':'
+                border
+                border-slate-200
+                rounded-lg
+                py-2
+                px-4
+                mt-2
+                bg-green-500
+                cursor-pointer
+                transition-colors
+                hover:bg-green-600
+                text-white
+'}}) }}
+                {{ form_widget(form.cancel, {'attr':{'class':'
+                border
+                border-slate-200
+                rounded-lg
+                py-2
+                px-4
+                mt-2
+                bg-gray-300
+                cursor-pointer
+                transition-colors
+                hover:bg-gray-600
+                hover:text-white
+'}}) }}
+            </div>
+        {% endblock %}
     {% endembed %}
 {% endblock %}
 

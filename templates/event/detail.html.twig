@@ -1,6 +1,11 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
+    <div
+        class="absolute top-[0%] right-[10%] w-[500px] h-[600px] bg-[#7349F3]/20 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
+
+    <div
+        class="absolute bottom-[-10%] right-[10%] w-[600px] h-[500px] bg-cyan-300/30 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
     <section class="flex flex-col justify-center p-4 m-16">
     <div class=" mx-auto w-full max-w-4xl">
 
@@ -18,18 +23,11 @@
             </div>
 
         {% else %}
-        <div class="
-        w-[40vw] flex
-
-        flex flex-row gap-4 items-start">
-            <div class="w-[40vw] flex
-                flex-shrink-0
-                flex flex-col
-                items-center justify-center
-                p-2">
+        <div class="w-full flex flex-row gap-4 items-start md:flex-row flex-col">
+            <div class="flex-shrink-0 w-50 sm:w-70 md:w-80 h-auto p-2 max-w-full">
             <img src="{{ asset('uploads/' ~ event.photo) }}" alt="{{ event.name }}" class="rounded-lg">
             </div>
-            <div class="flex-1 min-w-[320px] rounded-md bg-white p-6">
+            <div class="flex-1 rounded-md bg-white p-6 w-full relative z-10 w-full">
                 <p class="font-semibold">Name of the event : </p><p>{{ event.name }}</p>
                 <p class="font-semibold">Dates and hours of this one : </p> <p>{{ event.dateStartHour|date('d-m-Y H:i') }}
                     to {{ event.dateEndHour|date('d-m-Y H:i') }}</p>
@@ -48,7 +46,14 @@
 
                 <p class="font-semibold">Participants</p>
                 {% for participant in event.participantList %}
-                    <p>{{ loop.index }} : {{ participant.username }}</p>
+                    <p>{{ loop.index }} :
+                        <a href="{{ path('app_user_show',{'id':participant.id}) }}"
+                        class="hover:bg-sky-50
+                               hover:text-sky-500"
+                        >
+                        {{ participant.username }}
+                        </a>
+                    </p>
                 {% endfor %}
 
 
@@ -83,7 +88,7 @@
                     transition-colors
                     hover:bg-violet-600
                     text-white">
-                        <a onclick="confirm('are you sure you want to edit the event ?')" href="{{ path('events_edit', {'id': event.id}) }}">Update</a>
+                        <a onclick="return confirm('are you sure you want to edit the event ?')" href="{{ path('events_edit', {'id': event.id}) }}">Update</a>
                     </button>
                     <button class="
                     border
@@ -99,7 +104,7 @@
                 text-white
 
 ">
-                        <a onclick="confirm('are you sure you want to cancel the event ?')" href="{{ path('events_cancelled', {'id': event.id}) }}">Canceled</a>
+                        <a onclick="return confirm('are you sure you want to cancel the event ?')" href="{{ path('events_cancelled', {'id': event.id}) }}">Canceled</a>
                     </button>
                 {% endif%}
                 {% if app.user in event.participantList and date('now')< event.registrationDeadline %}
@@ -110,14 +115,15 @@
                 py-2
                 px-4
                 mt-2
-                bg-gray-500
+                bg-gray-400
                 cursor-pointer
                 transition-colors
                 hover:bg-gray-50
-                text-black
+                hover:text-black
+                text-white
 
 ">
-                        <a onclick="confirm('are you sure you want to unsubscribe ?')" href="{{ path('events_unsubscribe', {'id': event.id}) }}">Unsubscribe</a>
+                        <a onclick="return confirm('are you sure you want to unsubscribe ?')" href="{{ path('events_unsubscribe', {'id': event.id}) }}">Unsubscribe</a>
                     </button>
 
                 {% endif %}

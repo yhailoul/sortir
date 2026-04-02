@@ -4,8 +4,13 @@
 <h2 class="text-neutral-500 text-lg ">
     Cities
 </h2>
+    <div
+        class="absolute top-[0%] right-[10%] w-[500px] h-[600px] bg-[#7349F3]/20 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
+
+    <div
+        class="absolute bottom-[-10%] right-[10%] w-[600px] h-[500px] bg-cyan-300/30 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
     <section class="flex flex-col justify-center p-4 m-16">
-        <div class=" mx-auto w-full max-w-4xl" >
+        <div class=" mx-auto w-full max-w-4xl bg-white rounded-lg p-4 relative z-10 w-full" >
     {{ form_start(filterSearch)}}
         {{ form_row(filterSearch.searchTerm, {'attr':{'class':'
         w-full
@@ -69,7 +74,7 @@
 <br>
 
     <section class="flex flex-col justify-center p-4 mb-16">
-        <div class=" mx-auto w-full max-w-4xl" >
+        <div class=" mx-auto w-full max-w-4xl bg-white rounded-lg p-4 relative z-10 w-full" >
             <h3 class="mt-4">Create a new city</h3>
             {{ form_start(newCityForm) }}
             {{ form_label(newCityForm.name) }}

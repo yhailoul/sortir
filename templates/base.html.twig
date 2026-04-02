@@ -15,6 +15,7 @@
     {% endblock %}
 </head>
 <body class="h-full m-0 p-0 bg-[#F8F7FB]">
+
 {% block header %}
     <header>
         {% include 'views/nav/nav.html.twig' %}
@@ -30,11 +31,16 @@
 {% endfor %}
 
 <main class="{% block main_class %}pt-24{% endblock %}">
-    {% block body %}{% endblock %}
+    {% block body %}
+
+    {% endblock %}
 </main>
 {% block javascripts %}
     {% block importmap %}{{ importmap('app') }}{% endblock %}
 {% endblock %}
 </body>
+<script>
+
+</script>
 </html>
 

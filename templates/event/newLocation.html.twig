@@ -1,13 +1,69 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}Create a New Location{% endblock %}
+
 {% block body %}
-    {{ form_start(locationForm) }}
-    {{ form_widget(locationForm) }}
-    <button type="submit">Créer la location</button>
-    {{ form_end(locationForm) }}
-{% endblock %}
+    <div>
+        <div
+            class="absolute top-[0%] right-[10%] w-[500px] h-[600px] bg-[#7349F3]/20 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
 
-{% block title %}
-New Location
-{% endblock %}
+        <div
+            class="absolute bottom-[-10%] right-[10%] w-[600px] h-[500px] bg-cyan-300/30 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
 
+        <section class="flex flex-col justify-center p-4 mb-16">
+            <div class="bg-white rounded-xl p-8 mx-auto w-full max-w-4xl relative z-10 w-full">
+                <div class="mx-auto w-full max-w-4xl">
+                    <h3 class="mt-4">Create a new location</h3>
+                    {{ form_start(locationForm) }}
+                    {{ form_label(locationForm.name) }}
+                    {{ form_widget(locationForm.name, {'attr':{'class':'
+                w-full
+                text-sm px-3 py-2
+                p-4
+                rounded-lg
+                border border-slate-200
+                focus:border-violet-400 outline-none
+                mt-2
+                    ',
+                        'placeholder':'enter the name or your location'}}) }}
+                    {{ form_label(locationForm.city) }}
+                    {{ form_widget(locationForm.city, {'attr':{'class':'
+                w-full
+                text-sm px-3 py-2
+                p-4
+                rounded-lg
+                border border-slate-200
+                focus:border-violet-400 outline-none
+                mt-2
+                    '}}) }}
+                    {{ form_label(locationForm.street) }}
+                    {{ form_widget(locationForm.street, {'attr':{'class':'
+                w-full
+                text-sm px-3 py-2
+                p-4
+                rounded-lg
+                border border-slate-200
+                focus:border-violet-400 outline-none
+                mt-2
+                    ',
+                        'placeholder':'enter a street address'}}) }}
+                    <button
+                        class="border
+                        border-slate-200
+                        rounded-lg
+                        mb-4
+                        py-2
+                        px-4
+                        mt-2
+                        text-white
+                        bg-violet-500
+                        hover:bg-violet-600
+                        hover:text-white"
+                    >Create Location</button>
+                    <br>
+                    {{ form_end(locationForm) }}
+                </div>
+            </div>
+        </section>
+    </div>
+{% endblock %}
