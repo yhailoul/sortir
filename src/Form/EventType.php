@@ -70,7 +70,7 @@ class EventType extends AbstractType
                 ]
 
             ])
-            ->add('save', SubmitType::class, ['label' => 'Save'])
+            ->add('save', SubmitType::class, ['label' => 'Save as draft'])
             ->add('publish', SubmitType::class, ['label' => 'Publish'])
             ->add('cancel', SubmitType::class, ['label' => 'Cancel']);
     }

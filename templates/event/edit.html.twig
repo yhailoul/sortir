@@ -1,5 +1,7 @@
 {% extends 'base.html.twig' %}
-
+{% block title %}
+    Edit Event
+{% endblock %}
 {% block body %}
     {% embed 'views/form/template-form.html.twig' with { form : eventFormEdit } %}
         {% block formTitle %} Event updating {% endblock %}
