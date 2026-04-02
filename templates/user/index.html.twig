@@ -60,16 +60,16 @@
                     >Show User</a>
 
                     {% if user.active == true and is_granted('ROLE_ADMIN') %}
-                        <a onclick="confirm('Do you really want to DEACTIVATE user: {{ user.username }} ?')" href="{{ path('app_user_deactivate_admin', {'id': user.id}) }}"
+                        <a onclick="return confirm('Do you really want to DEACTIVATE user: {{ user.username }} ?')" href="{{ path('app_user_deactivate_admin', {'id': user.id}) }}"
                            class="hover:text-violet-600"
                         >Deactivate User</a>
                     {% elseif user.active == false and is_granted('ROLE_ADMIN') %}
-                            <a onclick="confirm('Do you really want to ACTIVATE user: {{ user.username }} ?')" href="{{ path('app_user_activate_admin', {'id': user.id}) }}"
+                            <a onclick="return confirm('Do you really want to ACTIVATE user: {{ user.username }} ?')" href="{{ path('app_user_activate_admin', {'id': user.id}) }}"
                                class="hover:text-violet-500"
                             >Activate User</a>
                     {% endif %}
                     {% if is_granted("ROLE_ADMIN") %}
-                    <a onclick="confirm('Do you really want to DELETE user: {{ user.username }} PERMANENTLY?')" href="{{ path('app_user_delete', { 'id':user.id }) }}"
+                    <a onclick="return confirm('Do you really want to DELETE user: {{ user.username }} PERMANENTLY?')" href="{{ path('app_user_delete', { 'id':user.id }) }}"
                        class="hover:text-red-500"
                     >Delete User</a>
                     {% endif %}
