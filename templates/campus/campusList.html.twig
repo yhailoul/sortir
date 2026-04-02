@@ -50,7 +50,7 @@
                 {%for campus in displayCities %}
                     <tr class="bg-white border-b hover:bg-blue-50">
                         <td class="px-6 py-4">{{ campus.name }}</td>
-                        <td class="px-6 py-4 justify-evenly"><a onclick="confirm('Are you sure you want to delete this campus ?')" href="{{ path('campus_delete' , {'id':campus.id}) }}"
+                        <td class="px-6 py-4 justify-evenly"><a onclick="return confirm('Are you sure you want to delete this campus ?')" href="{{ path('campus_delete' , {'id':campus.id}) }}"
                             class="hover:text-red-500"
                             >Delete</a>
                             <a onclick="confirm('Are you sure you want to edit this campus ?')" href="{{ path('campus_edit' , {'id':campus.id}) }}"
