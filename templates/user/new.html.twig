@@ -3,10 +3,5 @@
 {% block title %}New User{% endblock %}
 
 {% block body %}
-    <h1>Create new User</h1>
-    <p>Please note that any manually entered fields will be ignored if a CSV file is imported.</p>
-
-    {{ include('user/_form.html.twig') }}
-
-    <a href="{{ path('app_user_index') }}">back to list</a>
+    {{ include('user/_form.html.twig', {'formTitle': 'Create new User', 'formSubtitle': 'Please note that any manually entered fields will be ignored if a CSV file is imported.'}) }}
 {% endblock %}

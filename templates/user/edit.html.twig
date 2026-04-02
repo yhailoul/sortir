@@ -3,14 +3,9 @@
 {% block title %}Edit User{% endblock %}
 
 {% block body %}
-    <div class=" block w-full max-w-6xl mx-auto">
-
-    <h1>Edit User</h1>
-    <img src="{{ asset(photoPath) }}" alt="profile picture" style="width: 200px; height: 200px;">
-
-    {{ include('user/_form.html.twig', {'button_label': 'Update', 'hide_csvFile':true}) }}
-
-
-    </div>
-
+    {{ include('user/_form.html.twig', {
+        'button_label': 'Update',
+        'hide_csvFile': true,
+        'formTitle': 'Edit User'
+    }) }}
 {% endblock %}

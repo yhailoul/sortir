@@ -7,10 +7,10 @@
             min-h-screen
             flex items-center justify-center p-4">
     <div
-        class="absolute top-[0%] right-[10%] w-[500px] h-[600px] bg-[#7349F3]/20 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
+        class="absolute top-[0%] left-[40%] w-[300px] h-[600px] bg-[#33FF00]/15 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
 
     <div
-        class="absolute bottom-[-10%] right-[10%] w-[600px] h-[500px] bg-cyan-300/30 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
+        class="absolute bottom-[-0%] left-[40%] w-[400px] h-[500px] bg-[#FF0099]/15 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
     <div class="relative z-10 w-full">
     {% embed 'views/form/template-form.html.twig' with { form : eventForm } %}
         {% block formTitle %} Create an event ! {% endblock %}
@@ -23,7 +23,7 @@
                 py-2
                 px-4
                 mt-2
-                bg-violet-500
+                bg-[#7349F3]
                 cursor-pointer
                 transition-colors
                 hover:bg-violet-600
@@ -44,16 +44,15 @@
 '}}) }}
                 {{ form_widget(form.cancel, {'attr':{'class':'
                 border
-                border-slate-200
+                border-gray-300
                 rounded-lg
                 py-2
                 px-4
                 mt-2
-                bg-gray-300
+                text-gray-700
                 cursor-pointer
                 transition-colors
-                hover:bg-gray-600
-                hover:text-white
+                hover:bg-gray-50
 '}}) }}
             </div>
 

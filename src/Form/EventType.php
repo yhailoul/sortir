@@ -25,30 +25,33 @@ class EventType extends AbstractType
     {
         $builder
             ->add('name', TextType::class, [
+                'label' => 'Name :',
                 'attr' => [
-                    'placeholder' => 'Nom :'
+                    'placeholder' => 'Name'
                 ]
             ])
             ->add('dateStartHour', DateTimeType::class, [
-                'label' => "Date et heure de DEBUT de l'évènement :",
+                'label' => "Date and time of the event's START :",
                 'widget' => 'single_text'
             ])
             ->add('dateEndHour', DateTimeType::class, [
-                'label' => "Date et heure de FIN de l'évènement :",
+                'label' => "Date and time of the event's END :",
                 'widget' => 'single_text'
             ])
             ->add('registrationDeadline', DateTimeType::class, [
-                'label' => "Date limite d'inscription :",
+                'label' => "Registration deadline :",
                 'widget' => 'single_text'
             ])
             ->add('nbMaxRegistrations', IntegerType::class, [
+                'label' => "Maximum number of registrations :",
                 'attr' => [
-                    'placeholder' => 'Taille limite de participant :'
+                    'placeholder' => 'Participant size limit'
                 ]
             ])
             ->add('infosEvent', TextareaType::class, [
+                'label' => 'Informations :',
                 'attr' => [
-                    'placeholder' => "Description de l'activité :"
+                    'placeholder' => "Activity description :"
                 ]
             ])
             ->add('eventLocation', EntityType::class, [
@@ -68,7 +71,6 @@ class EventType extends AbstractType
                         'image/webp'
                     ], maxSizeMessage: 'Maximum file size allowed is 1MB', mimeTypesMessage: 'Only JPG, PNG, webp files are allowed')
                 ]
-
             ])
             ->add('save', SubmitType::class, ['label' => 'Save as draft'])
             ->add('publish', SubmitType::class, ['label' => 'Publish'])
