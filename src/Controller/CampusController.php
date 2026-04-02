@@ -15,9 +15,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[Route('campus', name: 'campus_')]
 final class CampusController extends AbstractController
 {
-    #[Route('/campus', name: 'campus_list', methods: ['GET', 'POST'])]
+    #[Route('', name: 'list', methods: ['GET', 'POST'])]
     #[IsGranted("ROLE_ADMIN")]
     public function campusList(Request $request,
                                CampusRepository $repository,
@@ -43,7 +44,7 @@ final class CampusController extends AbstractController
     }
 
 
-    #[Route('/campus/delete/{id}', name: 'campus_delete', requirements: ['id' => '\d+'])]
+    #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '\d+'])]
     #[isGranted('ROLE_ADMIN')]
     public function deleteEvent(
         int                    $id,
@@ -63,7 +64,7 @@ final class CampusController extends AbstractController
         $this->addFlash('success', 'campus deleted!');
         return $this->redirectToRoute('campus_list');
     }
-    #[Route('/campus/edit/{id}', name: 'campus_edit', requirements: ['id' => '\d+'])]
+    #[Route('/edit/{id}', name: 'edit', requirements: ['id' => '\d+'])]
     #[isGranted('ROLE_ADMIN')]
     public function editCampus(
         int                    $id,
