@@ -134,6 +134,22 @@ class AppFixtures extends Fixture
         $faker = Factory::create('fr_FR');
 
         $users = [];
+
+        $admin = new User();
+        $admin
+            ->setEmail('admin@test.com')
+            ->setPassword($this->userPasswordHasher->hashPassword($admin, '123456'))
+            ->setRoles(['ROLE_ADMIN'])
+            ->setUsername('admin')
+            ->setFirstname('Super')
+            ->setLastname('Admin')
+            ->setPhone('0102030405')
+            ->setActive(true)
+            ->setCampus($faker->randomElement($campusList));
+
+        $manager->persist($admin);
+        $users[] = $admin;
+
         for ($i = 0; $i < 50; $i++) {
             $user = new User();
             $user
