@@ -3,7 +3,14 @@
 {% block title %}Edit Campus{% endblock %}
 
 {% block body %}
-    <section class="flex flex-col justify-center p-4 mb-16">
+    <div>
+    <div
+        class="absolute top-[0%] right-[10%] w-[500px] h-[600px] bg-[#7349F3]/20 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
+
+    <div
+        class="absolute bottom-[-10%] right-[10%] w-[600px] h-[500px] bg-cyan-300/30 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
+        <div class="mx-auto w-full max-w-4xl bg-white rounded-lg p-1 relative z-10 w-full">
+        <section class="flex flex-col justify-center p-4 mb-16">
         <div class=" mx-auto w-full max-w-4xl" >
             <h3 class="mt-4">Create a new city</h3>
             {{ form_start(campusForm) }}
@@ -34,5 +41,6 @@
             {{ form_end(campusForm) }}
         </div>
     </section>
-
+  </div>
+</div>
 {% endblock %}

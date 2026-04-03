@@ -18,14 +18,14 @@ class VilleType extends AbstractType
             ->add('name', TextType::class,[
                 'label' => 'Nom',
                 'attr' => [
-                    'placeholder' => 'enter a city name'
+                    'placeholder' => 'City name'
                 ],
                 'required' => true,
             ])
             ->add('zipCode', NumberType::class,[
-                'label' => 'zip code',
+                'label' => 'Zip code',
                 'attr' => [
-                    'placeholder' => 'enter a city zip code'
+                    'placeholder' => 'City zip code'
                 ],
                 'required' => true,
             ])

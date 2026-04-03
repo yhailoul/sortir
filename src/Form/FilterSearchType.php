@@ -22,7 +22,7 @@ class FilterSearchType extends AbstractType
                 'label' => 'Search by name',
                 'required' => false,
                 'attr' => [
-                    'placeholder' => 'Search by name',
+                    'placeholder' => 'Name',
                     'class'=> 'form-control'
                 ]
             ])

@@ -30,9 +30,9 @@ class UserType extends AbstractType
 
         $builder
             ->add('username', TextType::class, [
-                'label' => 'Username',
+                'label' => 'Username :',
                 'attr' => [
-                    'placeholder' => 'enter a username',
+                    'placeholder' => 'Username',
                     'maxlength' => 180,
                     'pattern' => '.{3,}',
                 ],
@@ -41,40 +41,41 @@ class UserType extends AbstractType
                 ],
             ])
             ->add('firstName', TextType::class, [
-                'label' => 'Firstname',
+                'label' => 'Firstname :',
                 'attr' => [
-                    'placeholder' => 'enter firstname',
+                    'placeholder' => 'Firstname',
                 ],
                 'constraints' => [
                     new NotBlank(message: 'Firstname is required.'),
                 ],
             ])
             ->add('lastName', TextType::class, [
-                'label' => 'Lastname',
+                'label' => 'Lastname :',
                 'attr' => [
-                    'placeholder' => 'enter lastname',
+                    'placeholder' => 'Lastname',
                 ],
                 'constraints' => [
                     new NotBlank(message: 'Lastname is required.'),
                 ],
             ])
             ->add('phone', TelType::class, [
-                'label' => 'Phone',
+                'label' => 'Phone :',
                 'required' => false,
                 'attr' => [
-                    'placeholder' => 'enter phone number',
+                    'placeholder' => 'Phone number',
                 ],
             ])
             ->add('email', EmailType::class, [
-                'label' => 'Email',
+                'label' => 'Email :',
                 'attr' => [
-                    'placeholder' => 'enter email',
+                    'placeholder' => 'Email',
                 ],
                 'constraints' => [
                     new NotBlank(message: 'Email is required.'),
                 ],
             ])
             ->add('campus', EntityType::class, [
+                'label' => 'Campus :',
                 'class' => Campus::class,
                 'choice_label' => 'name',
                 'constraints' => [
@@ -87,13 +88,13 @@ class UserType extends AbstractType
                 'mapped' => false,
                 'required' => false,
                 'first_options' => [
-                    'label' => 'Password',
+                    'label' => 'Password :',
                     'attr' => ['placeholder' => $placeholder],
                     'constraints' => [
                         new NotBlank(message: 'Password is required.', groups: ['manual_creation']),
                     ],
                 ],
-                'second_options' => ['label' => 'Repeat Password'],
+                'second_options' => ['label' => 'Repeat Password :'],
                 'constraints' => [
                     new NotBlank(message: 'Repeat password is required.', groups: ['manual_creation']),
                     new Length(
@@ -108,7 +109,7 @@ class UserType extends AbstractType
                 ],
             ])
             ->add('photo', FileType::class, [
-                'label' => 'Profile Picture',
+                'label' => 'Profile Picture :',
                 'mapped' => false,
                 'required' => false,
                 'constraints' => [
@@ -123,7 +124,7 @@ class UserType extends AbstractType
 
         if ($options['show_csv_import']) {
             $builder->add('csvFile', FileType::class, [
-                'label' => 'Importer via CSV',
+                'label' => 'Import via CSV',
                 'mapped' => false,
                 'required' => false,
                 'constraints' => [
