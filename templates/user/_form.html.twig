@@ -1,116 +1,107 @@
 <div class="min-h-screen flex items-center justify-center p-4">
-    <div
-        class="absolute top-[0%] right-[10%] w-[500px] h-[600px] bg-[#7349F3]/20 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
+    <div class="absolute top-[0%] right-[10%] w-[500px] h-[600px] bg-[#7349F3]/20 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
+    <div class="absolute bottom-[-10%] right-[10%] w-[600px] h-[500px] bg-cyan-300/30 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
 
-    <div
-        class="absolute bottom-[-10%] right-[10%] w-[600px] h-[500px] bg-cyan-300/30 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
-<div class="flex flex-row flex-wrap gap-6 items-start p-4">
-    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'flex flex-row flex-wrap gap-6 items-start w-full'}}) }}
-{% if form.csvFile is defined %}
+    <div class="flex flex-row flex-wrap gap-6 items-start p-4">
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'flex flex-row flex-wrap gap-6 items-start w-full'}}) }}
 
-    <div class="w-[15vw] flex aspect-square rounded-md flex-shrink-0 flex flex-col items-center justify-center bg-white p-2 overflow-hidden">
-        {{ form_label(form.csvFile) }}
-        {{ form_widget(form.csvFile, {'attr':{'class': '
-            w-full
-            flex-shrink-0
-            text-sm px-3 py-2
-            border border-slate-200 rounded-lg
-            focus:border-violet-400 outline-none
-            transition-all cursor-pointer
-            bg-white
-            mt-24'}}) }}
+        {% if form.csvFile is defined %}
+            <div class="w-[15vw] flex aspect-square rounded-xl flex-shrink-0 flex flex-col items-center justify-center bg-white p-2 overflow-hidden">
+                {{ form_label(form.csvFile) }}
+                {{ form_widget(form.csvFile, {'attr':{'class': '
+                    w-full
+                    flex-shrink-0
+                    text-sm px-3 py-2
+                    border border-slate-200 rounded-lg
+                    focus:border-violet-400 outline-none
+                    transition-all cursor-pointer
+                    bg-white
+                    mt-24'}}) }}
+            </div>
+        {% endif %}
+
+
+        <div class="flex-1 min-w-[590px] flex flex-col">
+            {% if formTitle is defined %}
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">{{ formTitle }}</h1>
+            {% endif %}
+            {% if formSubtitle is defined %}
+                <p class="text-gray-500 mb-4">{{ formSubtitle }}</p>
+            {% endif %}
+            <div class="rounded-xl bg-white p-6 relative z-10">
+                <div class="mb-4">
+                    {{ form_label(form.username) }}
+                    {{ form_widget(form.username, {'attr':{'class':'
+                        w-full text-sm px-3 py-2
+                        border border-slate-200 rounded-lg
+                        focus:border-violet-400 outline-none
+                        transition-all cursor-pointer bg-white'}}) }}
+                </div>
+                <div class="mb-4">
+                    {{ form_label(form.firstName) }}
+                    {{ form_widget(form.firstName, {'attr':{'class':'
+                        w-full text-sm px-3 py-2
+                        border border-slate-200 rounded-lg
+                        focus:border-violet-400 outline-none
+                        transition-all cursor-pointer bg-white'}}) }}
+                </div>
+                <div class="mb-4">
+                    {{ form_label(form.lastName) }}
+                    {{ form_widget(form.lastName, {'attr':{'class':'
+                        w-full text-sm px-3 py-2
+                        border border-slate-200 rounded-lg
+                        focus:border-violet-400 outline-none
+                        transition-all cursor-pointer bg-white'}}) }}
+                </div>
+                <div class="mb-4">
+                    {{ form_label(form.phone) }}
+                    {{ form_widget(form.phone, {'attr':{'class':'
+                        w-full text-sm px-3 py-2
+                        border border-slate-200 rounded-lg
+                        focus:border-violet-400 outline-none
+                        transition-all cursor-pointer bg-white'}}) }}
+                </div>
+                <div class="mb-4">
+                    {{ form_label(form.email) }}
+                    {{ form_widget(form.email, {'attr':{'class':'
+                        w-full text-sm px-3 py-2
+                        border border-slate-200 rounded-lg
+                        focus:border-violet-400 outline-none
+                        transition-all cursor-pointer bg-white'}}) }}
+                </div>
+                <div class="mb-4">
+                    {{ form_label(form.campus) }}
+                    {{ form_widget(form.campus, {'attr':{'class':'
+                        w-full text-sm px-3 py-2
+                        border border-slate-200 rounded-lg
+                        focus:border-violet-400 outline-none
+                        transition-all cursor-pointer bg-white'}}) }}
+                </div>
+                <div class="mb-4">
+                    {{ form_label(form.password) }}
+                    {{ form_widget(form.password, {'attr':{'class':'
+                        w-full text-sm px-3 py-2
+                        border border-slate-200 rounded-lg
+                        focus:border-violet-400 outline-none
+                        transition-all cursor-pointer bg-white'}}) }}
+                </div>
+                <div class="mb-4">
+                    {{ form_label(form.photo) }}
+                    {{ form_widget(form.photo, {'attr':{'class':'
+                        w-full text-sm px-3 py-2
+                        border border-slate-200 rounded-lg
+                        focus:border-violet-400 outline-none
+                        transition-all cursor-pointer bg-white'}}) }}
+                </div>
+                <div class="flex justify-evenly">
+                    <button class="border border-gray-300 bg-[#7349F3] text-white hover:bg-violet-600 cursor-pointer text-sm font-semibold px-5 py-2.5 rounded-lg transition">{{ button_label|default('Save') }}</button>
+                    <button class="border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-semibold px-5 py-2.5 rounded-lg transition">
+                        <a href="{{ path('app_user_index') }}">back to list</a>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {{ form_end(form) }}
     </div>
-{% endif %}
-    <div class="flex-1 min-w-[590px] rounded-md bg-white p-6 relative z-10">
-        <div class="mb-4">
-            {{ form_label(form.username) }}
-            {{ form_widget(form.username, {'attr':{'class':'
-                w-full
-                text-sm
-                px-3 py-2
-                border border-slate-200 rounded-lg
-                focus:border-violet-400 outline-none
-                transition-all cursor-pointer bg-white'}}) }}
-        </div>
-        <div class="mb-4">
-            {{ form_label(form.firstName) }}
-            {{ form_widget(form.firstName, {'attr':{'class':'
-                w-full
-                text-sm
-                px-3 py-2
-                border border-slate-200 rounded-lg
-                focus:border-violet-400 outline-none
-                transition-all cursor-pointer bg-white'}}) }}
-        </div>
-        <div class="mb-4">
-            {{ form_label(form.lastName) }}
-            {{ form_widget(form.lastName, {'attr':{'class':'
-                w-full
-                text-sm
-                px-3 py-2
-                border border-slate-200 rounded-lg
-                focus:border-violet-400 outline-none
-                transition-all cursor-pointer bg-white'}}) }}
-        </div>
-        <div class="mb-4">
-            {{ form_label(form.phone) }}
-            {{ form_widget(form.phone, {'attr':{'class':'
-                w-full
-                text-sm
-                px-3 py-2
-                border border-slate-200 rounded-lg
-                focus:border-violet-400 outline-none
-                transition-all cursor-pointer bg-white'}}) }}
-        </div>
-        <div class="mb-4">
-            {{ form_label(form.email) }}
-            {{ form_widget(form.email, {'attr':{'class':'
-                w-full
-                text-sm
-                px-3 py-2
-                border border-slate-200 rounded-lg
-                focus:border-violet-400 outline-none
-                transition-all cursor-pointer bg-white'}}) }}
-        </div>
-        <div class="mb-4">
-            {{ form_label(form.campus) }}
-            {{ form_widget(form.campus, {'attr':{'class':'
-                w-full
-                text-sm
-                px-3 py-2
-                border border-slate-200 rounded-lg
-                focus:border-violet-400 outline-none
-                transition-all cursor-pointer bg-white'}}) }}
-        </div>
-        <div class="mb-4">
-            {{ form_label(form.password) }}
-            {{ form_widget(form.password, {'attr':{'class':'
-                w-full
-                text-sm
-                px-3 py-2
-                border border-slate-200 rounded-lg
-                focus:border-violet-400 outline-none
-                transition-all cursor-pointer bg-white'}}) }}
-        </div>
-        <div class="mb-4">
-            {{ form_label(form.photo) }}
-            {{ form_widget(form.photo, {'attr':{'class':'
-                w-full
-                text-sm
-                px-3 py-2
-                border border-slate-200 rounded-lg
-                focus:border-violet-400 outline-none
-                transition-all cursor-pointer bg-white'}}) }}
-        </div>
-        <div class=" flex justify-evenly">
-            <button class="border border-gray-300 bg-violet-400 text-white hover:bg-violet-50 hover:text-gray-700 text-sm font-semibold px-5 py-2.5 rounded-lg transition">{{ button_label|default('Save') }}</button>
-            <button class="border border-gray-300 bg-sky-400 text-white hover:bg-sky-100 hover:text-gray-700 text-sm font-semibold px-5 py-2.5 rounded-lg transition">
-                <a href="{{ path('app_user_index') }}">back to list</a>
-            </button>
-        </div>
-
-    </div>
-
-    {{ form_end(form) }}
-</div>
 </div>

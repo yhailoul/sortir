@@ -1,18 +1,19 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-<h2 class="text-neutral-500 text-lg ">
-    Cities
-</h2>
+
     <div
         class="absolute top-[0%] right-[10%] w-[500px] h-[600px] bg-[#7349F3]/20 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
 
     <div
         class="absolute bottom-[-10%] right-[10%] w-[600px] h-[500px] bg-cyan-300/30 rounded-[50%] blur-[50px] pointer-events-none -z-10"></div>
-    <section class="flex flex-col justify-center p-4 m-16">
-        <div class=" mx-auto w-full max-w-4xl bg-white rounded-lg p-4 relative z-10 w-full" >
-    {{ form_start(filterSearch)}}
-        {{ form_row(filterSearch.searchTerm, {'attr':{'class':'
+    <section class="flex flex-col justify-center mt-16 p-4">
+        <h2 class="text-3xl font-bold text-gray-800 mb-6 mx-auto w-full max-w-4xl">
+            Cities
+        </h2>
+        <div class=" mx-auto w-full max-w-4xl bg-white rounded-lg p-4 relative z-10 w-full">
+            {{ form_start(filterSearch) }}
+            {{ form_row(filterSearch.searchTerm, {'attr':{'class':'
         w-full
         text-sm px-3 py-2
         p-4
@@ -21,8 +22,8 @@
         focus:border-violet-400 outline-none
         mt-2
             '}}) }}
-        <button
-            class="border
+            <button
+                class="border
                 border-slate-200
                 rounded-lg
                 mb-4
@@ -30,11 +31,13 @@
                 px-4
                 mt-2
                 text-white
-                bg-violet-500
+                cursor-pointer
+                bg-[#7349F3]
                 hover:bg-violet-600
                 hover:text-white"
-        > find city</button>
-    {{ form_end(filterSearch, { render_rest: false })}}
+            > Find city
+            </button>
+            {{ form_end(filterSearch, { render_rest: false }) }}
             <div
                 class="overflow-auto
                     max-w-full max-h-[700px]
@@ -43,39 +46,41 @@
                     mx-auto max-w-4xl w-full
                     border">
 
-        <table class="w-full text-sm text-left text-gray-500">
-            <thead class="text-xs text-gray-700 uppercase bg-sky-100 sticky top-0 z-10">
-            <tr>
-                <th scope ="col" class="px-6 py-3">Name</th>
-                <th scope ="col" class="px-6 py-3">Zip code</th>
-                <th scope ="col" class="px-6 py-3">Actions</th>
+                <table class="w-full text-sm text-left text-gray-500">
+                    <thead class="text-xs text-white uppercase bg-[#7349F3] sticky top-0 z-10">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">Name</th>
+                        <th scope="col" class="px-6 py-3">Zip code</th>
+                        <th scope="col" class="px-6 py-3">Actions</th>
 
-            </tr>
-            </thead>
-            <tbody>
-            {%  set displayCities = searchedCities is not empty ? searchedCities : cities  %}
-            {%for city in displayCities %}
-                <tr class="bg-white border-b hover:bg-blue-50">
-                    <td class="px-6 py-4">{{ city.name }}</td>
-                    <td class="px-6 py-4">{{ city.zipcode }}</td>
-                    <td><a onclick="confirm('Are you sure you want to delete this city ?')" href="{{ path('city_delete' , {'id':city.id}) }}"
-                         class="hover:text-red-500"
-                        >Delete</a>
-                    <a onclick="confirm('Are you sure you want to edit this city ?')" href="{{ path('city_edit' , {'id':city.id}) }}"
-                       class="hover:text-violet-500"
-                       >Edit</a></td>
-                </tr>
-        {% endfor %}
-            </tbody>
-            </table>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% set displayCities = searchedCities is not empty ? searchedCities : cities %}
+                    {% for city in displayCities %}
+                        <tr class="bg-white border-b hover:bg-blue-50">
+                            <td class="px-6 py-4">{{ city.name }}</td>
+                            <td class="px-6 py-4">{{ city.zipcode }}</td>
+                            <td><a onclick="confirm('Are you sure you want to delete this city ?')"
+                                   href="{{ path('city_delete' , {'id':city.id}) }}"
+                                   class="hover:text-red-500"
+                                >Delete</a>
+                                <a onclick="confirm('Are you sure you want to edit this city ?')"
+                                   href="{{ path('city_edit' , {'id':city.id}) }}"
+                                   class="hover:text-violet-500"
+                                >Edit</a></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
     </section>
-<br>
+    <br>
 
     <section class="flex flex-col justify-center p-4 mb-16">
-        <div class=" mx-auto w-full max-w-4xl bg-white rounded-lg p-4 relative z-10 w-full" >
-            <h3 class="mt-4">Create a new city</h3>
+        <h3 class="text-3xl font-bold text-gray-800 mb-6 mx-auto w-full max-w-4xl">Create a new city</h3>
+        <div class=" mx-auto w-full max-w-4xl bg-white rounded-lg p-4 relative z-10 w-full">
             {{ form_start(newCityForm) }}
             {{ form_label(newCityForm.name) }}
             {{ form_widget(newCityForm.name, {'attr':{'class':'
@@ -105,11 +110,13 @@
                 py-2
                 px-4
                 mt-2
+                cursor-pointer
                 text-white
-                bg-violet-500
+                bg-[#7349F3]
                 hover:bg-violet-600
                 hover:text-white"
-            >Create new City</button>
+            >Create new City
+            </button>
             <br>
             {{ form_end(newCityForm) }}
         </div>
@@ -119,6 +126,6 @@
 {% endblock %}
 
 {% block title %}
-City
+    City
 {% endblock %}
 
